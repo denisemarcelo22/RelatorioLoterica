@@ -130,14 +130,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
+      
+      // More specific error handling
       if (error.message.includes('duplicate key') || error.message.includes('already registered')) {
         setErrors({ email: 'Email ou CPF já cadastrado' });
-      } else if (error.message.includes('Invalid login credentials')) {
-        setErrors({ email: 'Email ou senha incorretos' });
-      } else if (error.message.includes('email_address_invalid') || error.message.includes('Email address') && error.message.includes('invalid')) {
+      } else if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+        if (activeTab === 'login') {
+          setErrors({ email: 'Email ou senha incorretos. Verifique suas credenciais.' });
+        } else {
+          setErrors({ email: 'Erro ao criar conta. Tente novamente.' });
+        }
+      } else if (error.message.includes('email_address_invalid') || (error.message.includes('Email address') && error.message.includes('invalid'))) {
         setErrors({ email: 'Formato de email inválido. Verifique se o email está correto.' });
       } else if (error.message.includes('Database error')) {
         setErrors({ email: 'Erro no banco de dados. Tente novamente.' });
+      } else if (error.message.includes('User profile not found')) {
+        setErrors({ email: 'Perfil de usuário não encontrado. Entre em contato com o administrador.' });
+      } else if (error.message.includes('No user returned from authentication')) {
+        setErrors({ email: 'Erro na autenticação. Tente novamente.' });
       } else {
         setErrors({ email: error.message || 'Erro ao processar solicitação' });
       }
@@ -183,6 +193,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     }
   };
 
+  const handleTabChange = (tab: 'login' | 'register') => {
+    setActiveTab(tab);
+    setErrors({});
+    setSuccessMessage('');
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -204,7 +220,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           {/* Tabs */}
           <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
             <button
-              onClick={() => setActiveTab('login')}
+              onClick={() => handleTabChange('login')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'login'
                   ? 'bg-white text-blue-600 shadow-sm'
@@ -214,7 +230,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
               Login
             </button>
             <button
-              onClick={() => setActiveTab('register')}
+              onClick={() => handleTabChange('register')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 activeTab === 'register'
                   ? 'bg-white text-blue-600 shadow-sm'

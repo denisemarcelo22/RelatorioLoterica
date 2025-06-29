@@ -116,24 +116,92 @@ export const signUp = async (userData: {
   password: string;
   is_admin?: boolean;
 }) => {
-  // Create the auth user with email confirmation disabled
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: userData.email,
-    password: userData.password,
-    options: {
-      emailRedirectTo: undefined // Disable email confirmation
+  try {
+    // Create the auth user with email confirmation disabled
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      options: {
+        emailRedirectTo: undefined // Disable email confirmation
+      }
+    });
+
+    if (authError) {
+      console.error('Auth signup error:', authError);
+      throw authError;
     }
-  });
 
-  if (authError) throw authError;
+    if (!authData.user) {
+      throw new Error('Failed to create auth user');
+    }
 
-  if (!authData.user) {
-    throw new Error('Failed to create auth user');
+    // Check if user is automatically signed in (session exists)
+    if (authData.session) {
+      // User is automatically signed in, create profile
+      const { data, error } = await supabase
+        .from('tb_usuario')
+        .insert([{
+          user_id: authData.user.id,
+          nome: userData.name,
+          cpf: userData.cpf,
+          email: userData.email,
+          telefone: userData.phone,
+          cod_operador: userData.operator_code,
+          tipo_usuario: userData.is_admin ? 'admin' : 'operador',
+          ativo: true,
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Profile creation error:', error);
+        // If profile creation fails, clean up the auth user
+        await supabase.auth.signOut();
+        throw error;
+      }
+
+      return { user: data, authUser: authData.user };
+    } else {
+      // User was created but not automatically signed in
+      // This means they need to sign in manually
+      throw new Error('Registration successful. Please sign in with your credentials.');
+    }
+  } catch (error: any) {
+    console.error('SignUp error:', error);
+    throw error;
   }
+};
 
-  // Check if user is automatically signed in (session exists)
-  if (authData.session) {
-    // User is automatically signed in, create profile
+// Admin function to sign up operators
+export const signUpOperator = async (userData: {
+  name: string;
+  cpf: string;
+  email: string;
+  phone: string;
+  operator_code: string;
+  password: string;
+  is_admin?: boolean;
+}) => {
+  try {
+    // Create the auth user with email confirmation disabled
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      options: {
+        emailRedirectTo: undefined // Disable email confirmation
+      }
+    });
+
+    if (authError) {
+      console.error('Auth signup error:', authError);
+      throw authError;
+    }
+
+    if (!authData.user) {
+      throw new Error('Failed to create auth user');
+    }
+
+    // Create the user profile in tb_usuario
     const { data, error } = await supabase
       .from('tb_usuario')
       .insert([{
@@ -155,80 +223,47 @@ export const signUp = async (userData: {
     }
 
     return { user: data, authUser: authData.user };
-  } else {
-    // User was created but not automatically signed in
-    // This means they need to sign in manually
-    throw new Error('Registration successful. Please sign in with your credentials.');
-  }
-};
-
-// Admin function to sign up operators
-export const signUpOperator = async (userData: {
-  name: string;
-  cpf: string;
-  email: string;
-  phone: string;
-  operator_code: string;
-  password: string;
-  is_admin?: boolean;
-}) => {
-  // Create the auth user with email confirmation disabled
-  const { data: authData, error: authError } = await supabase.auth.signUp({
-    email: userData.email,
-    password: userData.password,
-    options: {
-      emailRedirectTo: undefined // Disable email confirmation
-    }
-  });
-
-  if (authError) throw authError;
-
-  if (!authData.user) {
-    throw new Error('Failed to create auth user');
-  }
-
-  // Create the user profile in tb_usuario
-  const { data, error } = await supabase
-    .from('tb_usuario')
-    .insert([{
-      user_id: authData.user.id,
-      nome: userData.name,
-      cpf: userData.cpf,
-      email: userData.email,
-      telefone: userData.phone,
-      cod_operador: userData.operator_code,
-      tipo_usuario: userData.is_admin ? 'admin' : 'operador',
-      ativo: true,
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Profile creation error:', error);
+  } catch (error: any) {
+    console.error('SignUpOperator error:', error);
     throw error;
   }
-
-  return { user: data, authUser: authData.user };
 };
 
 export const signIn = async (email: string, password: string) => {
-  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
+  try {
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  if (authError) throw authError;
+    if (authError) {
+      console.error('Auth signin error:', authError);
+      throw authError;
+    }
 
-  // Get user profile from tb_usuario
-  const { data: userData, error: userError } = await supabase
-    .from('tb_usuario')
-    .select('*')
-    .eq('user_id', authData.user.id)
-    .single();
+    if (!authData.user) {
+      throw new Error('No user returned from authentication');
+    }
 
-  if (userError) throw userError;
+    // Get user profile from tb_usuario
+    const { data: userData, error: userError } = await supabase
+      .from('tb_usuario')
+      .select('*')
+      .eq('user_id', authData.user.id)
+      .single();
 
-  return { user: userData, authUser: authData.user };
+    if (userError) {
+      console.error('User profile fetch error:', userError);
+      // If we can't find the user profile, sign them out
+      await supabase.auth.signOut();
+      throw new Error('User profile not found. Please contact administrator.');
+    }
+
+    return { user: userData, authUser: authData.user };
+  } catch (error: any) {
+    console.error('SignIn error:', error);
+    throw error;
+  }
 };
 
 export const signOut = async () => {
