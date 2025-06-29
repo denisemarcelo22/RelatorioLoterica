@@ -135,36 +135,39 @@ export const signUp = async (userData: {
       throw new Error('Failed to create auth user');
     }
 
-    // Check if user is automatically signed in (session exists)
+    // Always create the user profile, regardless of session status
+    // This ensures the profile exists when the user signs in after email confirmation
+    const { data, error } = await supabase
+      .from('tb_usuario')
+      .insert([{
+        user_id: authData.user.id,
+        nome: userData.name,
+        cpf: userData.cpf,
+        email: userData.email,
+        telefone: userData.phone,
+        cod_operador: userData.operator_code,
+        tipo_usuario: userData.is_admin ? 'admin' : 'operador',
+        ativo: true,
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Profile creation error:', error);
+      throw error;
+    }
+
+    // Return appropriate response based on session status
     if (authData.session) {
-      // User is automatically signed in, create profile
-      const { data, error } = await supabase
-        .from('tb_usuario')
-        .insert([{
-          user_id: authData.user.id,
-          nome: userData.name,
-          cpf: userData.cpf,
-          email: userData.email,
-          telefone: userData.phone,
-          cod_operador: userData.operator_code,
-          tipo_usuario: userData.is_admin ? 'admin' : 'operador',
-          ativo: true,
-        }])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Profile creation error:', error);
-        // If profile creation fails, clean up the auth user
-        await supabase.auth.signOut();
-        throw error;
-      }
-
+      // User is automatically signed in
       return { user: data, authUser: authData.user };
     } else {
-      // User was created but not automatically signed in
-      // This means email confirmation is required
-      throw new Error('REGISTRATION_SUCCESS_EMAIL_CONFIRMATION_REQUIRED');
+      // User was created but email confirmation is required
+      return { 
+        user: data, 
+        authUser: authData.user,
+        requiresEmailConfirmation: true
+      };
     }
   } catch (error: any) {
     console.error('SignUp error:', error);
