@@ -117,12 +117,12 @@ export const signUp = async (userData: {
   is_admin?: boolean;
 }) => {
   try {
-    // Create the auth user with email confirmation disabled
+    // Create the auth user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
       options: {
-        emailRedirectTo: undefined // Disable email confirmation
+        emailRedirectTo: undefined // Attempt to disable email confirmation
       }
     });
 
@@ -163,8 +163,8 @@ export const signUp = async (userData: {
       return { user: data, authUser: authData.user };
     } else {
       // User was created but not automatically signed in
-      // This means they need to sign in manually
-      throw new Error('Registration successful. Please sign in with your credentials.');
+      // This means email confirmation is required
+      throw new Error('REGISTRATION_SUCCESS_EMAIL_CONFIRMATION_REQUIRED');
     }
   } catch (error: any) {
     console.error('SignUp error:', error);
@@ -183,12 +183,12 @@ export const signUpOperator = async (userData: {
   is_admin?: boolean;
 }) => {
   try {
-    // Create the auth user with email confirmation disabled
+    // Create the auth user
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
       options: {
-        emailRedirectTo: undefined // Disable email confirmation
+        emailRedirectTo: undefined // Attempt to disable email confirmation
       }
     });
 
@@ -201,7 +201,8 @@ export const signUpOperator = async (userData: {
       throw new Error('Failed to create auth user');
     }
 
-    // Create the user profile in tb_usuario
+    // For admin-created operators, we'll create the profile regardless
+    // since admins should be able to create accounts
     const { data, error } = await supabase
       .from('tb_usuario')
       .insert([{
@@ -222,7 +223,12 @@ export const signUpOperator = async (userData: {
       throw error;
     }
 
-    return { user: data, authUser: authData.user };
+    // Return success regardless of session status for admin-created accounts
+    return { 
+      user: data, 
+      authUser: authData.user,
+      requiresEmailConfirmation: !authData.session
+    };
   } catch (error: any) {
     console.error('SignUpOperator error:', error);
     throw error;
@@ -238,6 +244,12 @@ export const signIn = async (email: string, password: string) => {
 
     if (authError) {
       console.error('Auth signin error:', authError);
+      
+      // Handle specific email confirmation error
+      if (authError.message.includes('Email not confirmed') || authError.message.includes('email_not_confirmed')) {
+        throw new Error('EMAIL_NOT_CONFIRMED');
+      }
+      
       throw authError;
     }
 

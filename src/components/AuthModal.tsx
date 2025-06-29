@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, User, Mail, Phone, Key, Eye, EyeOff } from 'lucide-react';
+import { X, User, Mail, Phone, Key, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { signIn, signUp, User as UserType } from '../lib/supabase';
 
 interface AuthModalProps {
@@ -24,6 +24,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [successMessage, setSuccessMessage] = useState('');
+  const [emailConfirmationRequired, setEmailConfirmationRequired] = useState(false);
 
   const formatCPF = (value: string) => {
     return value
@@ -89,6 +90,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     setLoading(true);
     setErrors({});
     setSuccessMessage('');
+    setEmailConfirmationRequired(false);
 
     try {
       // Normalize email before sending to Supabase
@@ -116,11 +118,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           onClose();
           resetForm();
         } catch (registrationError: any) {
-          // If registration fails with a message about signing in manually
-          if (registrationError.message.includes('Please sign in with your credentials')) {
-            // Switch to login tab and show success message
+          // Handle the specific case where email confirmation is required
+          if (registrationError.message === 'REGISTRATION_SUCCESS_EMAIL_CONFIRMATION_REQUIRED') {
+            setEmailConfirmationRequired(true);
             setActiveTab('login');
-            setSuccessMessage('Cadastro realizado com sucesso! Faça login com suas credenciais.');
+            setSuccessMessage('Cadastro realizado com sucesso! Verifique seu email para confirmar sua conta antes de fazer login.');
             // Clear password fields for security
             setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
           } else {
@@ -131,8 +133,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     } catch (error: any) {
       console.error('Auth error:', error);
       
-      // More specific error handling
-      if (error.message.includes('duplicate key') || error.message.includes('already registered')) {
+      // Handle specific error cases
+      if (error.message === 'EMAIL_NOT_CONFIRMED') {
+        setErrors({ 
+          email: 'Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação antes de fazer login.' 
+        });
+        setEmailConfirmationRequired(true);
+      } else if (error.message.includes('duplicate key') || error.message.includes('already registered')) {
         setErrors({ email: 'Email ou CPF já cadastrado' });
       } else if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
         if (activeTab === 'login') {
@@ -168,6 +175,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     });
     setErrors({});
     setSuccessMessage('');
+    setEmailConfirmationRequired(false);
     setShowPassword(false);
     setShowConfirmPassword(false);
   };
@@ -191,12 +199,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     if (successMessage) {
       setSuccessMessage('');
     }
+    if (emailConfirmationRequired) {
+      setEmailConfirmationRequired(false);
+    }
   };
 
   const handleTabChange = (tab: 'login' | 'register') => {
     setActiveTab(tab);
     setErrors({});
     setSuccessMessage('');
+    setEmailConfirmationRequired(false);
   };
 
   if (!isOpen) return null;
@@ -243,8 +255,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
           {/* Success Message */}
           {successMessage && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-blue-700 text-sm">{successMessage}</p>
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-start space-x-2">
+              <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <p className="text-green-700 text-sm">{successMessage}</p>
+            </div>
+          )}
+
+          {/* Email Confirmation Warning */}
+          {emailConfirmationRequired && (
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start space-x-2">
+              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div className="text-amber-700 text-sm">
+                <p className="font-medium mb-1">Confirmação de email necessária</p>
+                <p>Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta.</p>
+              </div>
             </div>
           )}
 
