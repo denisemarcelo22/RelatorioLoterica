@@ -170,6 +170,55 @@ export const signUp = async (userData: {
   return { user: data, authUser: signInData.user };
 };
 
+// Admin function to sign up operators
+export const signUpOperator = async (userData: {
+  name: string;
+  cpf: string;
+  email: string;
+  phone: string;
+  operator_code: string;
+  password: string;
+  is_admin?: boolean;
+}) => {
+  // Create the auth user with email confirmation disabled
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: userData.email,
+    password: userData.password,
+    options: {
+      emailRedirectTo: undefined // Disable email confirmation
+    }
+  });
+
+  if (authError) throw authError;
+
+  if (!authData.user) {
+    throw new Error('Failed to create auth user');
+  }
+
+  // Create the user profile in tb_usuario
+  const { data, error } = await supabase
+    .from('tb_usuario')
+    .insert([{
+      user_id: authData.user.id,
+      nome: userData.name,
+      cpf: userData.cpf,
+      email: userData.email,
+      telefone: userData.phone,
+      cod_operador: userData.operator_code,
+      tipo_usuario: userData.is_admin ? 'admin' : 'operador',
+      ativo: true,
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Profile creation error:', error);
+    throw error;
+  }
+
+  return { user: data, authUser: authData.user };
+};
+
 export const signIn = async (email: string, password: string) => {
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email,
@@ -220,6 +269,18 @@ export const getCashReport = async (userId: string, date?: string) => {
     .single();
 
   if (error && error.code !== 'PGRST116') throw error;
+  return data;
+};
+
+// Get all cash reports (admin function)
+export const getCashReports = async () => {
+  const { data, error } = await supabase
+    .from('tb_fechamento_caixa')
+    .select('*')
+    .order('data_fechamento', { ascending: false })
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
   return data;
 };
 
