@@ -117,12 +117,12 @@ export const signUp = async (userData: {
   is_admin?: boolean;
 }) => {
   try {
-    // Create the auth user
+    // Create the auth user with email confirmation disabled
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
       options: {
-        emailRedirectTo: undefined // Attempt to disable email confirmation
+        emailRedirectTo: undefined // Disable email confirmation
       }
     });
 
@@ -135,8 +135,10 @@ export const signUp = async (userData: {
       throw new Error('Failed to create auth user');
     }
 
-    // Always create the user profile, regardless of session status
-    // This ensures the profile exists when the user signs in after email confirmation
+    // Wait a moment for the auth session to be established
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Create the user profile in tb_usuario
     const { data, error } = await supabase
       .from('tb_usuario')
       .insert([{
@@ -154,20 +156,17 @@ export const signUp = async (userData: {
 
     if (error) {
       console.error('Profile creation error:', error);
+      // If profile creation fails, try to clean up the auth user
+      await supabase.auth.signOut();
       throw error;
     }
 
-    // Return appropriate response based on session status
+    // If we have a session, the user is automatically signed in
     if (authData.session) {
-      // User is automatically signed in
       return { user: data, authUser: authData.user };
     } else {
-      // User was created but email confirmation is required
-      return { 
-        user: data, 
-        authUser: authData.user,
-        requiresEmailConfirmation: true
-      };
+      // If no session, user needs to confirm email
+      throw new Error('REGISTRATION_SUCCESS_EMAIL_CONFIRMATION_REQUIRED');
     }
   } catch (error: any) {
     console.error('SignUp error:', error);
@@ -186,12 +185,12 @@ export const signUpOperator = async (userData: {
   is_admin?: boolean;
 }) => {
   try {
-    // Create the auth user
+    // Create the auth user with email confirmation disabled
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: userData.email,
       password: userData.password,
       options: {
-        emailRedirectTo: undefined // Attempt to disable email confirmation
+        emailRedirectTo: undefined // Disable email confirmation
       }
     });
 
@@ -204,8 +203,7 @@ export const signUpOperator = async (userData: {
       throw new Error('Failed to create auth user');
     }
 
-    // For admin-created operators, we'll create the profile regardless
-    // since admins should be able to create accounts
+    // Create the user profile in tb_usuario
     const { data, error } = await supabase
       .from('tb_usuario')
       .insert([{
@@ -226,7 +224,6 @@ export const signUpOperator = async (userData: {
       throw error;
     }
 
-    // Return success regardless of session status for admin-created accounts
     return { 
       user: data, 
       authUser: authData.user,
