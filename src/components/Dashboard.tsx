@@ -140,8 +140,8 @@ const Dashboard: React.FC = () => {
                 {currentUser && (
                   <div className="bg-white px-4 py-2 rounded-lg shadow-sm border">
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium text-gray-900">{currentUser.name}</span>
-                      <span className="ml-2">Código: {currentUser.operator_code}</span>
+                      <span className="font-medium text-gray-900">{currentUser.nome}</span>
+                      <span className="ml-2">Código: {currentUser.cod_operador}</span>
                     </div>
                   </div>
                 )}

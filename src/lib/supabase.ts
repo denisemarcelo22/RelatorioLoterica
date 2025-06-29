@@ -9,13 +9,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Types
+// Types based on tb_usuario table structure
 export interface User {
   id: string;
   user_id: string;
   nome: string;
-  cpf: string;
   email: string;
+  cpf: string;
   telefone: string;
   cod_operador: string;
   tipo_usuario: 'admin' | 'operador';
@@ -27,8 +27,8 @@ export interface User {
 export interface CashReport {
   id: string;
   user_id: string;
-  operator_code: string;
-  report_date: string;
+  cod_operador: string;
+  data_fechamento: string;
   moeda_inicial: number;
   bolao_inicial: number;
   suprimento_inicial: number;
@@ -63,11 +63,11 @@ export interface CashReport {
   vale_loteria_3: number;
   vale_loteria_4: number;
   vale_loteria_5: number;
-  repassado_valor_1: number;
-  repassado_valor_2: number;
-  repassado_valor_3: number;
-  repassado_valor_4: number;
-  repassado_valor_5: number;
+  repassado_caixa_1: number;
+  repassado_caixa_2: number;
+  repassado_caixa_3: number;
+  repassado_caixa_4: number;
+  repassado_caixa_5: number;
   sangria_final: number;
   moeda_final: number;
   bolao_final: number;
@@ -79,23 +79,31 @@ export interface CashReport {
 
 export interface ProductReport {
   id: string;
-  cash_report_id: string;
-  product_name: string;
-  unit_value: number;
-  inicial: number;
-  recebi: number;
-  devolvi: number;
-  final: number;
+  user_id: string;
+  fechamento_id: string;
+  cod_operador: string;
+  nome_produto: string;
+  valor_unitario: number;
+  quantidade_inicial: number;
+  quantidade_recebida: number;
+  quantidade_devolvida: number;
+  quantidade_final: number;
+  valor_vendido: number;
   created_at: string;
+  updated_at: string;
 }
 
 export interface SupplyReport {
   id: string;
-  cash_report_id: string;
-  denomination: string;
-  quantity: number;
-  unit_value: number;
+  user_id: string;
+  fechamento_id: string;
+  cod_operador: string;
+  denominacao: string;
+  valor_unitario: number;
+  quantidade: number;
+  valor_total: number;
   created_at: string;
+  updated_at: string;
 }
 
 // Auth functions
@@ -165,12 +173,12 @@ export const signOut = async () => {
   if (error) throw error;
 };
 
-// Cash report functions
+// Cash report functions using tb_fechamento_caixa
 export const saveCashReport = async (reportData: Partial<CashReport>) => {
   const { data, error } = await supabase
-    .from('cash_reports')
+    .from('tb_fechamento_caixa')
     .upsert(reportData, {
-      onConflict: 'operator_code,report_date'
+      onConflict: 'user_id,data_fechamento'
     })
     .select()
     .single();
@@ -179,34 +187,34 @@ export const saveCashReport = async (reportData: Partial<CashReport>) => {
   return data;
 };
 
-export const getCashReport = async (operatorCode: string, date?: string) => {
+export const getCashReport = async (userId: string, date?: string) => {
   const reportDate = date || new Date().toISOString().split('T')[0];
   
   const { data, error } = await supabase
-    .from('cash_reports')
+    .from('tb_fechamento_caixa')
     .select('*')
-    .eq('operator_code', operatorCode)
-    .eq('report_date', reportDate)
+    .eq('user_id', userId)
+    .eq('data_fechamento', reportDate)
     .single();
 
   if (error && error.code !== 'PGRST116') throw error;
   return data;
 };
 
-// Product report functions
-export const saveProductReports = async (cashReportId: string, products: Partial<ProductReport>[]) => {
+// Product report functions using tb_controle_jogos
+export const saveProductReports = async (fechamentoId: string, products: Partial<ProductReport>[]) => {
   // Delete existing products for this report
   await supabase
-    .from('product_reports')
+    .from('tb_controle_jogos')
     .delete()
-    .eq('cash_report_id', cashReportId);
+    .eq('fechamento_id', fechamentoId);
 
   // Insert new products
   const { data, error } = await supabase
-    .from('product_reports')
+    .from('tb_controle_jogos')
     .insert(products.map(product => ({
       ...product,
-      cash_report_id: cashReportId
+      fechamento_id: fechamentoId
     })))
     .select();
 
@@ -214,30 +222,30 @@ export const saveProductReports = async (cashReportId: string, products: Partial
   return data;
 };
 
-export const getProductReports = async (cashReportId: string) => {
+export const getProductReports = async (fechamentoId: string) => {
   const { data, error } = await supabase
-    .from('product_reports')
+    .from('tb_controle_jogos')
     .select('*')
-    .eq('cash_report_id', cashReportId);
+    .eq('fechamento_id', fechamentoId);
 
   if (error) throw error;
   return data;
 };
 
-// Supply report functions
-export const saveSupplyReports = async (cashReportId: string, supplies: Partial<SupplyReport>[]) => {
+// Supply report functions using tb_suprimento_cofre
+export const saveSupplyReports = async (fechamentoId: string, supplies: Partial<SupplyReport>[]) => {
   // Delete existing supplies for this report
   await supabase
-    .from('supply_reports')
+    .from('tb_suprimento_cofre')
     .delete()
-    .eq('cash_report_id', cashReportId);
+    .eq('fechamento_id', fechamentoId);
 
   // Insert new supplies
   const { data, error } = await supabase
-    .from('supply_reports')
+    .from('tb_suprimento_cofre')
     .insert(supplies.map(supply => ({
       ...supply,
-      cash_report_id: cashReportId
+      fechamento_id: fechamentoId
     })))
     .select();
 
@@ -245,17 +253,17 @@ export const saveSupplyReports = async (cashReportId: string, supplies: Partial<
   return data;
 };
 
-export const getSupplyReports = async (cashReportId: string) => {
+export const getSupplyReports = async (fechamentoId: string) => {
   const { data, error } = await supabase
-    .from('supply_reports')
+    .from('tb_suprimento_cofre')
     .select('*')
-    .eq('cash_report_id', cashReportId);
+    .eq('fechamento_id', fechamentoId);
 
   if (error) throw error;
   return data;
 };
 
-// Get all users (admin only)
+// Get all users (admin only) from tb_usuario
 export const getAllUsers = async () => {
   const { data, error } = await supabase
     .from('tb_usuario')
