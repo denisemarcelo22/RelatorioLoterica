@@ -29,50 +29,50 @@ interface Product {
 }
 
 interface CashData {
-  moedaInicial: number;
-  bolaoInicial: number;
-  suprimentoInicial: number;
-  comissaoBolao: number;
-  vendaProdutos: number;
-  totalCaixa1: number;
-  totalCaixa2: number;
-  premiosInstantaneos: number;
-  sangriaCorpvs1: number;
-  sangriaCorpvs2: number;
-  sangriaCorpvs3: number;
-  sangriaCorpvs4: number;
-  sangriaCorpvs5: number;
-  sangriaCofre1: number;
-  sangriaCofre2: number;
-  sangriaCofre3: number;
-  sangriaCofre4: number;
-  sangriaCofre5: number;
-  pixMalote1: number;
-  pixMalote2: number;
-  pixMalote3: number;
-  pixMalote4: number;
-  pixMalote5: number;
-  recebidoCaixa1: number;
-  recebidoCaixa2: number;
-  recebidoCaixa3: number;
-  recebidoCaixa4: number;
-  recebidoCaixa5: number;
-  recebidoCaixa6: number;
-  valeLoteria1: number;
-  valeLoteria2: number;
-  valeLoteria3: number;
-  valeLoteria4: number;
-  valeLoteria5: number;
-  repassadoValor1: number;
-  repassadoValor2: number;
-  repassadoValor3: number;
-  repassadoValor4: number;
-  repassadoValor5: number;
-  sangriaFinal: number;
-  moedaFinal: number;
-  bolaoFinal: number;
-  resgates: number;
-  diferenca: number;
+  moedaInicial: string;
+  bolaoInicial: string;
+  suprimentoInicial: string;
+  comissaoBolao: string;
+  vendaProdutos: string;
+  totalCaixa1: string;
+  totalCaixa2: string;
+  premiosInstantaneos: string;
+  sangriaCorpvs1: string;
+  sangriaCorpvs2: string;
+  sangriaCorpvs3: string;
+  sangriaCorpvs4: string;
+  sangriaCorpvs5: string;
+  sangriaCofre1: string;
+  sangriaCofre2: string;
+  sangriaCofre3: string;
+  sangriaCofre4: string;
+  sangriaCofre5: string;
+  pixMalote1: string;
+  pixMalote2: string;
+  pixMalote3: string;
+  pixMalote4: string;
+  pixMalote5: string;
+  recebidoCaixa1: string;
+  recebidoCaixa2: string;
+  recebidoCaixa3: string;
+  recebidoCaixa4: string;
+  recebidoCaixa5: string;
+  recebidoCaixa6: string;
+  valeLoteria1: string;
+  valeLoteria2: string;
+  valeLoteria3: string;
+  valeLoteria4: string;
+  valeLoteria5: string;
+  repassadoValor1: string;
+  repassadoValor2: string;
+  repassadoValor3: string;
+  repassadoValor4: string;
+  repassadoValor5: string;
+  sangriaFinal: string;
+  moedaFinal: string;
+  bolaoFinal: string;
+  resgates: string;
+  diferenca: string;
 }
 
 interface SupplyItem {
@@ -80,24 +80,6 @@ interface SupplyItem {
   quantity: number;
   value: number;
 }
-
-// Simulated database for storing form data by operator and date
-const getStorageKey = (operatorCode: string, date: string) => {
-  return `formData_${operatorCode}_${date}`;
-};
-
-const saveFormData = (operatorCode: string, data: any) => {
-  const today = new Date().toISOString().split('T')[0];
-  const key = getStorageKey(operatorCode, today);
-  localStorage.setItem(key, JSON.stringify(data));
-};
-
-const loadFormData = (operatorCode: string) => {
-  const today = new Date().toISOString().split('T')[0];
-  const key = getStorageKey(operatorCode, today);
-  const stored = localStorage.getItem(key);
-  return stored ? JSON.parse(stored) : null;
-};
 
 const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   const [activeTab, setActiveTab] = useState<'cash' | 'products' | 'supply'>('cash');
@@ -110,50 +92,50 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const [cashData, setCashData] = useState<CashData>({
-    moedaInicial: 0,
-    bolaoInicial: 0,
-    suprimentoInicial: 0,
-    comissaoBolao: 0,
-    vendaProdutos: 0,
-    totalCaixa1: 0,
-    totalCaixa2: 0,
-    premiosInstantaneos: 0,
-    sangriaCorpvs1: 0,
-    sangriaCorpvs2: 0,
-    sangriaCorpvs3: 0,
-    sangriaCorpvs4: 0,
-    sangriaCorpvs5: 0,
-    sangriaCofre1: 0,
-    sangriaCofre2: 0,
-    sangriaCofre3: 0,
-    sangriaCofre4: 0,
-    sangriaCofre5: 0,
-    pixMalote1: 0,
-    pixMalote2: 0,
-    pixMalote3: 0,
-    pixMalote4: 0,
-    pixMalote5: 0,
-    recebidoCaixa1: 0,
-    recebidoCaixa2: 0,
-    recebidoCaixa3: 0,
-    recebidoCaixa4: 0,
-    recebidoCaixa5: 0,
-    recebidoCaixa6: 0,
-    valeLoteria1: 0,
-    valeLoteria2: 0,
-    valeLoteria3: 0,
-    valeLoteria4: 0,
-    valeLoteria5: 0,
-    repassadoValor1: 0,
-    repassadoValor2: 0,
-    repassadoValor3: 0,
-    repassadoValor4: 0,
-    repassadoValor5: 0,
-    sangriaFinal: 0,
-    moedaFinal: 0,
-    bolaoFinal: 0,
-    resgates: 0,
-    diferenca: 0
+    moedaInicial: '0,00',
+    bolaoInicial: '0,00',
+    suprimentoInicial: '0,00',
+    comissaoBolao: '0,00',
+    vendaProdutos: '0,00',
+    totalCaixa1: '0,00',
+    totalCaixa2: '0,00',
+    premiosInstantaneos: '0,00',
+    sangriaCorpvs1: '0,00',
+    sangriaCorpvs2: '0,00',
+    sangriaCorpvs3: '0,00',
+    sangriaCorpvs4: '0,00',
+    sangriaCorpvs5: '0,00',
+    sangriaCofre1: '0,00',
+    sangriaCofre2: '0,00',
+    sangriaCofre3: '0,00',
+    sangriaCofre4: '0,00',
+    sangriaCofre5: '0,00',
+    pixMalote1: '0,00',
+    pixMalote2: '0,00',
+    pixMalote3: '0,00',
+    pixMalote4: '0,00',
+    pixMalote5: '0,00',
+    recebidoCaixa1: '0,00',
+    recebidoCaixa2: '0,00',
+    recebidoCaixa3: '0,00',
+    recebidoCaixa4: '0,00',
+    recebidoCaixa5: '0,00',
+    recebidoCaixa6: '0,00',
+    valeLoteria1: '0,00',
+    valeLoteria2: '0,00',
+    valeLoteria3: '0,00',
+    valeLoteria4: '0,00',
+    valeLoteria5: '0,00',
+    repassadoValor1: '0,00',
+    repassadoValor2: '0,00',
+    repassadoValor3: '0,00',
+    repassadoValor4: '0,00',
+    repassadoValor5: '0,00',
+    sangriaFinal: '0,00',
+    moedaFinal: '0,00',
+    bolaoFinal: '0,00',
+    resgates: '0,00',
+    diferenca: '0,00'
   });
 
   const [products, setProducts] = useState<Product[]>([
@@ -187,16 +169,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     { denomination: 'R$0,05', quantity: 0, value: 0.05 }
   ]);
 
-  // Load data when operator changes
-  useEffect(() => {
-    const savedData = loadFormData(selectedOperator);
-    if (savedData) {
-      if (savedData.cashData) setCashData(savedData.cashData);
-      if (savedData.products) setProducts(savedData.products);
-      if (savedData.supplyItems) setSupplyItems(savedData.supplyItems);
-    }
-  }, [selectedOperator]);
-
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -204,11 +176,18 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     return () => clearInterval(timer);
   }, []);
 
+  // Função para formatar valor para exibição
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+  };
+
+  // Função para formatar valor de string para exibição
+  const formatCurrencyFromString = (value: string) => {
+    const numericValue = parseFloat(value.replace(',', '.')) || 0;
+    return formatCurrency(numericValue);
   };
 
   const formatDateTime = (date: Date) => {
@@ -221,18 +200,27 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     });
   };
 
-  // Simple currency input handler - no automatic formatting during typing
-  const handleCurrencyChange = (value: string, setter: (val: number) => void) => {
-    // Remove all non-numeric characters except comma and dot
-    const cleanValue = value.replace(/[^\d,.-]/g, '');
+  // Função para aplicar máscara de moeda durante a digitação
+  const applyCurrencyMask = (value: string) => {
+    // Remove tudo que não é dígito
+    let numericValue = value.replace(/\D/g, '');
     
-    // Convert comma to dot for parsing
-    const normalizedValue = cleanValue.replace(',', '.');
+    // Se não há dígitos, retorna 0,00
+    if (!numericValue) return '0,00';
     
-    // Parse the number
-    const numericValue = parseFloat(normalizedValue) || 0;
+    // Converte para centavos
+    const cents = parseInt(numericValue);
     
-    setter(numericValue);
+    // Converte de volta para reais
+    const reais = cents / 100;
+    
+    // Formata com 2 casas decimais e vírgula
+    return reais.toFixed(2).replace('.', ',');
+  };
+
+  // Função para converter string formatada para número
+  const parseStringToNumber = (value: string) => {
+    return parseFloat(value.replace(',', '.')) || 0;
   };
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -257,9 +245,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   };
 
   const updateCashData = (field: keyof CashData, value: string) => {
-    handleCurrencyChange(value, (numericValue) => {
-      setCashData(prev => ({ ...prev, [field]: numericValue }));
-    });
+    const maskedValue = applyCurrencyMask(value);
+    setCashData(prev => ({ ...prev, [field]: maskedValue }));
   };
 
   const updateProduct = (index: number, field: keyof Product, value: string | number) => {
@@ -268,23 +255,13 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     ));
   };
 
-  const updateSupplyItem = (index: number, field: 'quantity', value: string) => {
+  const updateSupplyItem = (index: number, field: 'quantity' | 'value', value: string) => {
     setSupplyItems(prev => prev.map((item, i) => 
       i === index ? { 
         ...item, 
-        [field]: parseInt(value) || 0
+        [field]: field === 'quantity' ? parseInt(value) || 0 : parseStringToNumber(value)
       } : item
     ));
-  };
-
-  const handleSave = () => {
-    const formData = {
-      cashData,
-      products,
-      supplyItems
-    };
-    saveFormData(selectedOperator, formData);
-    alert('Formulário salvo com sucesso!');
   };
 
   if (!isOpen) return null;
@@ -353,7 +330,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Inicial</label>
                       <input
                         type="text"
-                        value={cashData.moedaInicial.toString().replace('.', ',')}
+                        value={cashData.moedaInicial}
                         onChange={(e) => updateCashData('moedaInicial', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
@@ -363,7 +340,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Inicial</label>
                       <input
                         type="text"
-                        value={cashData.bolaoInicial.toString().replace('.', ',')}
+                        value={cashData.bolaoInicial}
                         onChange={(e) => updateCashData('bolaoInicial', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
@@ -376,7 +353,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Suprimento Inicial</label>
                       <input
                         type="text"
-                        value={cashData.suprimentoInicial.toString().replace('.', ',')}
+                        value={cashData.suprimentoInicial}
                         onChange={(e) => updateCashData('suprimentoInicial', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
@@ -386,7 +363,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Comissão Bolão</label>
                       <input
                         type="text"
-                        value={cashData.comissaoBolao.toString().replace('.', ',')}
+                        value={cashData.comissaoBolao}
                         onChange={(e) => updateCashData('comissaoBolao', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
@@ -399,7 +376,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Venda Produtos</label>
                       <input
                         type="text"
-                        value={cashData.vendaProdutos.toString().replace('.', ',')}
+                        value={cashData.vendaProdutos}
                         onChange={(e) => updateCashData('vendaProdutos', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
@@ -409,7 +386,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 1</label>
                       <input
                         type="text"
-                        value={cashData.totalCaixa1.toString().replace('.', ',')}
+                        value={cashData.totalCaixa1}
                         onChange={(e) => updateCashData('totalCaixa1', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
@@ -422,7 +399,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 2</label>
                       <input
                         type="text"
-                        value={cashData.totalCaixa2.toString().replace('.', ',')}
+                        value={cashData.totalCaixa2}
                         onChange={(e) => updateCashData('totalCaixa2', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
@@ -432,7 +409,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Prêmios Instantâneos</label>
                       <input
                         type="text"
-                        value={cashData.premiosInstantaneos.toString().replace('.', ',')}
+                        value={cashData.premiosInstantaneos}
                         onChange={(e) => updateCashData('premiosInstantaneos', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="0,00"
@@ -449,7 +426,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 1</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCorpvs1.toString().replace('.', ',')}
+                          value={cashData.sangriaCorpvs1}
                           onChange={(e) => updateCashData('sangriaCorpvs1', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -459,7 +436,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 2</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCorpvs2.toString().replace('.', ',')}
+                          value={cashData.sangriaCorpvs2}
                           onChange={(e) => updateCashData('sangriaCorpvs2', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -472,7 +449,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 3</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCorpvs3.toString().replace('.', ',')}
+                          value={cashData.sangriaCorpvs3}
                           onChange={(e) => updateCashData('sangriaCorpvs3', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -482,7 +459,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 4</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCorpvs4.toString().replace('.', ',')}
+                          value={cashData.sangriaCorpvs4}
                           onChange={(e) => updateCashData('sangriaCorpvs4', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -495,7 +472,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 5</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCorpvs5.toString().replace('.', ',')}
+                          value={cashData.sangriaCorpvs5}
                           onChange={(e) => updateCashData('sangriaCorpvs5', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -505,7 +482,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 1</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCofre1.toString().replace('.', ',')}
+                          value={cashData.sangriaCofre1}
                           onChange={(e) => updateCashData('sangriaCofre1', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -518,7 +495,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 2</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCofre2.toString().replace('.', ',')}
+                          value={cashData.sangriaCofre2}
                           onChange={(e) => updateCashData('sangriaCofre2', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -528,7 +505,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 3</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCofre3.toString().replace('.', ',')}
+                          value={cashData.sangriaCofre3}
                           onChange={(e) => updateCashData('sangriaCofre3', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -541,7 +518,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 4</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCofre4.toString().replace('.', ',')}
+                          value={cashData.sangriaCofre4}
                           onChange={(e) => updateCashData('sangriaCofre4', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -551,7 +528,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 5</label>
                         <input
                           type="text"
-                          value={cashData.sangriaCofre5.toString().replace('.', ',')}
+                          value={cashData.sangriaCofre5}
                           onChange={(e) => updateCashData('sangriaCofre5', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -564,7 +541,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 1</label>
                         <input
                           type="text"
-                          value={cashData.pixMalote1.toString().replace('.', ',')}
+                          value={cashData.pixMalote1}
                           onChange={(e) => updateCashData('pixMalote1', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -574,7 +551,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 2</label>
                         <input
                           type="text"
-                          value={cashData.pixMalote2.toString().replace('.', ',')}
+                          value={cashData.pixMalote2}
                           onChange={(e) => updateCashData('pixMalote2', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -587,7 +564,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 3</label>
                         <input
                           type="text"
-                          value={cashData.pixMalote3.toString().replace('.', ',')}
+                          value={cashData.pixMalote3}
                           onChange={(e) => updateCashData('pixMalote3', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -597,7 +574,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 4</label>
                         <input
                           type="text"
-                          value={cashData.pixMalote4.toString().replace('.', ',')}
+                          value={cashData.pixMalote4}
                           onChange={(e) => updateCashData('pixMalote4', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -610,7 +587,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 5</label>
                         <input
                           type="text"
-                          value={cashData.pixMalote5.toString().replace('.', ',')}
+                          value={cashData.pixMalote5}
                           onChange={(e) => updateCashData('pixMalote5', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -620,7 +597,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 1</label>
                         <input
                           type="text"
-                          value={cashData.recebidoCaixa1.toString().replace('.', ',')}
+                          value={cashData.recebidoCaixa1}
                           onChange={(e) => updateCashData('recebidoCaixa1', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -633,7 +610,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 2</label>
                         <input
                           type="text"
-                          value={cashData.recebidoCaixa2.toString().replace('.', ',')}
+                          value={cashData.recebidoCaixa2}
                           onChange={(e) => updateCashData('recebidoCaixa2', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -643,7 +620,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 3</label>
                         <input
                           type="text"
-                          value={cashData.recebidoCaixa3.toString().replace('.', ',')}
+                          value={cashData.recebidoCaixa3}
                           onChange={(e) => updateCashData('recebidoCaixa3', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -656,7 +633,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 4</label>
                         <input
                           type="text"
-                          value={cashData.recebidoCaixa4.toString().replace('.', ',')}
+                          value={cashData.recebidoCaixa4}
                           onChange={(e) => updateCashData('recebidoCaixa4', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -666,7 +643,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 5</label>
                         <input
                           type="text"
-                          value={cashData.recebidoCaixa5.toString().replace('.', ',')}
+                          value={cashData.recebidoCaixa5}
                           onChange={(e) => updateCashData('recebidoCaixa5', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -679,7 +656,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 6</label>
                         <input
                           type="text"
-                          value={cashData.recebidoCaixa6.toString().replace('.', ',')}
+                          value={cashData.recebidoCaixa6}
                           onChange={(e) => updateCashData('recebidoCaixa6', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -689,7 +666,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 1</label>
                         <input
                           type="text"
-                          value={cashData.valeLoteria1.toString().replace('.', ',')}
+                          value={cashData.valeLoteria1}
                           onChange={(e) => updateCashData('valeLoteria1', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -702,7 +679,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 2</label>
                         <input
                           type="text"
-                          value={cashData.valeLoteria2.toString().replace('.', ',')}
+                          value={cashData.valeLoteria2}
                           onChange={(e) => updateCashData('valeLoteria2', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -712,7 +689,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 3</label>
                         <input
                           type="text"
-                          value={cashData.valeLoteria3.toString().replace('.', ',')}
+                          value={cashData.valeLoteria3}
                           onChange={(e) => updateCashData('valeLoteria3', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -725,7 +702,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 4</label>
                         <input
                           type="text"
-                          value={cashData.valeLoteria4.toString().replace('.', ',')}
+                          value={cashData.valeLoteria4}
                           onChange={(e) => updateCashData('valeLoteria4', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -735,7 +712,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 5</label>
                         <input
                           type="text"
-                          value={cashData.valeLoteria5.toString().replace('.', ',')}
+                          value={cashData.valeLoteria5}
                           onChange={(e) => updateCashData('valeLoteria5', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -748,7 +725,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 1</label>
                         <input
                           type="text"
-                          value={cashData.repassadoValor1.toString().replace('.', ',')}
+                          value={cashData.repassadoValor1}
                           onChange={(e) => updateCashData('repassadoValor1', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -758,7 +735,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 2</label>
                         <input
                           type="text"
-                          value={cashData.repassadoValor2.toString().replace('.', ',')}
+                          value={cashData.repassadoValor2}
                           onChange={(e) => updateCashData('repassadoValor2', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -771,7 +748,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 3</label>
                         <input
                           type="text"
-                          value={cashData.repassadoValor3.toString().replace('.', ',')}
+                          value={cashData.repassadoValor3}
                           onChange={(e) => updateCashData('repassadoValor3', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -781,7 +758,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 4</label>
                         <input
                           type="text"
-                          value={cashData.repassadoValor4.toString().replace('.', ',')}
+                          value={cashData.repassadoValor4}
                           onChange={(e) => updateCashData('repassadoValor4', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -794,7 +771,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 5</label>
                         <input
                           type="text"
-                          value={cashData.repassadoValor5.toString().replace('.', ',')}
+                          value={cashData.repassadoValor5}
                           onChange={(e) => updateCashData('repassadoValor5', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -804,7 +781,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Final</label>
                         <input
                           type="text"
-                          value={cashData.sangriaFinal.toString().replace('.', ',')}
+                          value={cashData.sangriaFinal}
                           onChange={(e) => updateCashData('sangriaFinal', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -817,7 +794,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Final</label>
                         <input
                           type="text"
-                          value={cashData.moedaFinal.toString().replace('.', ',')}
+                          value={cashData.moedaFinal}
                           onChange={(e) => updateCashData('moedaFinal', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -827,7 +804,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Final</label>
                         <input
                           type="text"
-                          value={cashData.bolaoFinal.toString().replace('.', ',')}
+                          value={cashData.bolaoFinal}
                           onChange={(e) => updateCashData('bolaoFinal', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -840,7 +817,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Resgates</label>
                         <input
                           type="text"
-                          value={cashData.resgates.toString().replace('.', ',')}
+                          value={cashData.resgates}
                           onChange={(e) => updateCashData('resgates', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -850,7 +827,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Diferença</label>
                         <input
                           type="text"
-                          value={cashData.diferenca.toString().replace('.', ',')}
+                          value={cashData.diferenca}
                           onChange={(e) => updateCashData('diferenca', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           placeholder="0,00"
@@ -1007,10 +984,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
           {/* Save Button */}
           <div className="mt-6 flex justify-end">
-            <button 
-              onClick={handleSave}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-            >
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
               Salvar Formulário
             </button>
           </div>
