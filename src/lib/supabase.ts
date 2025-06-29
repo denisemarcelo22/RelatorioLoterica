@@ -17,7 +17,6 @@ export interface User {
   email: string;
   phone: string;
   operator_code: string;
-  password: string;
   is_admin: boolean;
   created_at: string;
   updated_at: string;
@@ -126,7 +125,6 @@ export const signUp = async (userData: {
         email: userData.email,
         phone: userData.phone,
         operator_code: userData.operator_code,
-        password: userData.password, // In production, this should be hashed
         is_admin: userData.is_admin || false,
       }])
       .select()
