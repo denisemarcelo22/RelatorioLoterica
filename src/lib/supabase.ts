@@ -116,36 +116,58 @@ export const signUp = async (userData: {
   password: string;
   is_admin?: boolean;
 }) => {
-  // First create the auth user
+  // First create the auth user with email confirmation disabled
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: userData.email,
     password: userData.password,
+    options: {
+      emailRedirectTo: undefined // Disable email confirmation
+    }
   });
 
   if (authError) throw authError;
 
-  // Then create the user profile in tb_usuario
-  if (authData.user) {
-    const { data, error } = await supabase
-      .from('tb_usuario')
-      .insert([{
-        user_id: authData.user.id,
-        nome: userData.name,
-        cpf: userData.cpf,
-        email: userData.email,
-        telefone: userData.phone,
-        cod_operador: userData.operator_code,
-        tipo_usuario: userData.is_admin ? 'admin' : 'operador',
-        ativo: true,
-      }])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return { user: data, authUser: authData.user };
+  if (!authData.user) {
+    throw new Error('Failed to create auth user');
   }
 
-  throw new Error('Failed to create user');
+  // Wait a moment for the auth session to be established
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  // Sign in the user immediately to establish the session
+  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+    email: userData.email,
+    password: userData.password,
+  });
+
+  if (signInError) {
+    // If sign in fails, try to clean up the auth user
+    console.warn('Sign in after registration failed:', signInError);
+    throw signInError;
+  }
+
+  // Now create the user profile in tb_usuario with the authenticated session
+  const { data, error } = await supabase
+    .from('tb_usuario')
+    .insert([{
+      user_id: authData.user.id,
+      nome: userData.name,
+      cpf: userData.cpf,
+      email: userData.email,
+      telefone: userData.phone,
+      cod_operador: userData.operator_code,
+      tipo_usuario: userData.is_admin ? 'admin' : 'operador',
+      ativo: true,
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Profile creation error:', error);
+    throw error;
+  }
+
+  return { user: data, authUser: signInData.user };
 };
 
 export const signIn = async (email: string, password: string) => {
