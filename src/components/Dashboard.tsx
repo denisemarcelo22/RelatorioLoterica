@@ -13,7 +13,8 @@ import {
   FileText
 } from 'lucide-react';
 import AuthModal from './AuthModal';
-import FormModal from './FormModal';
+import AdminDashboard from './AdminDashboard';
+import OperatorDashboard from './OperatorDashboard';
 import { User, signOut } from '../lib/supabase';
 
 interface TransactionData {
@@ -36,7 +37,6 @@ interface TransactionData {
 const Dashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   const [data] = useState<TransactionData>({
@@ -89,17 +89,8 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  const handleFormButtonClick = () => {
-    if (currentUser) {
-      setIsFormModalOpen(true);
-    } else {
-      setIsAuthModalOpen(true);
-    }
-  };
-
   const handleLogin = (user: User) => {
     setCurrentUser(user);
-    setIsFormModalOpen(true);
   };
 
   const handleLogout = async () => {
@@ -111,6 +102,16 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // If user is logged in, show appropriate dashboard
+  if (currentUser) {
+    if (currentUser.tipo_usuario === 'admin') {
+      return <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />;
+    } else {
+      return <OperatorDashboard currentUser={currentUser} onLogout={handleLogout} />;
+    }
+  }
+
+  // Show public dashboard with login option
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -135,34 +136,14 @@ const Dashboard: React.FC = () => {
                 </span>
               </div>
 
-              {/* User Info and Form Button */}
-              <div className="flex items-center gap-3">
-                {currentUser && (
-                  <div className="bg-white px-4 py-2 rounded-lg shadow-sm border">
-                    <div className="text-sm text-gray-600">
-                      <span className="font-medium text-gray-900">{currentUser.nome}</span>
-                      <span className="ml-2">Código: {currentUser.cod_operador}</span>
-                    </div>
-                  </div>
-                )}
-                
-                <button
-                  onClick={handleFormButtonClick}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-2 font-medium"
-                >
-                  <FileText className="w-5 h-5" />
-                  <span className="hidden sm:inline">Formulário</span>
-                </button>
-
-                {currentUser && (
-                  <button
-                    onClick={handleLogout}
-                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 text-sm font-medium"
-                  >
-                    Sair
-                  </button>
-                )}
-              </div>
+              {/* Login Button */}
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-2 font-medium"
+              >
+                <FileText className="w-5 h-5" />
+                <span>Fazer Login</span>
+              </button>
             </div>
           </div>
         </div>
@@ -390,22 +371,31 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Login CTA */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 mt-8 text-center">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Acesse o Sistema de Relatórios
+          </h2>
+          <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
+            Faça login para acessar o sistema completo de relatórios financeiros, 
+            controle de jogos e gerenciamento de operadores.
+          </p>
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="bg-white hover:bg-gray-100 text-blue-600 px-8 py-3 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          >
+            Fazer Login Agora
+          </button>
+        </div>
       </div>
 
-      {/* Modals */}
+      {/* Auth Modal */}
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)}
         onLogin={handleLogin}
       />
-      
-      {currentUser && (
-        <FormModal 
-          isOpen={isFormModalOpen} 
-          onClose={() => setIsFormModalOpen(false)}
-          user={currentUser}
-        />
-      )}
     </div>
   );
 };
