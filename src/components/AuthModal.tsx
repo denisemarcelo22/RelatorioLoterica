@@ -93,10 +93,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      if (error.message.includes('duplicate key')) {
+      if (error.message.includes('duplicate key') || error.message.includes('already registered')) {
         setErrors({ email: 'Email ou CPF já cadastrado' });
       } else if (error.message.includes('Invalid login credentials')) {
         setErrors({ email: 'Email ou senha incorretos' });
+      } else if (error.message.includes('Database error')) {
+        setErrors({ email: 'Erro no banco de dados. Tente novamente.' });
       } else {
         setErrors({ email: error.message || 'Erro ao processar solicitação' });
       }

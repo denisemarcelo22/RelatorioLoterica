@@ -12,12 +12,14 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Types
 export interface User {
   id: string;
-  name: string;
+  user_id: string;
+  nome: string;
   cpf: string;
   email: string;
-  phone: string;
-  operator_code: string;
-  is_admin: boolean;
+  telefone: string;
+  cod_operador: string;
+  tipo_usuario: 'admin' | 'operador';
+  ativo: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -114,18 +116,19 @@ export const signUp = async (userData: {
 
   if (authError) throw authError;
 
-  // Then create the user profile
+  // Then create the user profile in tb_usuario
   if (authData.user) {
     const { data, error } = await supabase
-      .from('users')
+      .from('tb_usuario')
       .insert([{
-        id: authData.user.id,
-        name: userData.name,
+        user_id: authData.user.id,
+        nome: userData.name,
         cpf: userData.cpf,
         email: userData.email,
-        phone: userData.phone,
-        operator_code: userData.operator_code,
-        is_admin: userData.is_admin || false,
+        telefone: userData.phone,
+        cod_operador: userData.operator_code,
+        tipo_usuario: userData.is_admin ? 'admin' : 'operador',
+        ativo: true,
       }])
       .select()
       .single();
@@ -145,11 +148,11 @@ export const signIn = async (email: string, password: string) => {
 
   if (authError) throw authError;
 
-  // Get user profile
+  // Get user profile from tb_usuario
   const { data: userData, error: userError } = await supabase
-    .from('users')
+    .from('tb_usuario')
     .select('*')
-    .eq('id', authData.user.id)
+    .eq('user_id', authData.user.id)
     .single();
 
   if (userError) throw userError;
@@ -255,9 +258,9 @@ export const getSupplyReports = async (cashReportId: string) => {
 // Get all users (admin only)
 export const getAllUsers = async () => {
   const { data, error } = await supabase
-    .from('users')
+    .from('tb_usuario')
     .select('*')
-    .order('operator_code');
+    .order('cod_operador');
 
   if (error) throw error;
   return data;
