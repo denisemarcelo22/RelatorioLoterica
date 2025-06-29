@@ -20,12 +20,11 @@ interface FormModalProps {
 
 interface Product {
   name: string;
-  unitValue?: number;
+  unitValue: number;
   inicial: number;
   recebi: number;
   devolvi: number;
   final: number;
-  customValue?: number;
 }
 
 interface CashData {
@@ -78,7 +77,7 @@ interface CashData {
 interface SupplyItem {
   denomination: string;
   quantity: number;
-  value: number;
+  total: number;
 }
 
 const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
@@ -139,34 +138,34 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   });
 
   const [products, setProducts] = useState<Product[]>([
-    { name: 'TELE SENA', unitValue: 15.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA AMARELA', inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA ROSA', inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA VERDE', inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA LILÁS', inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA VERMELHA', inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'FEDERAL', unitValue: 4.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'FEDERAL', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TREVO DA SORTE', unitValue: 2.50, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'SÓ O OURO', unitValue: 2.50, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'RODA DA SORTE', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'CAÇA AO TESOURO', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'VIP', unitValue: 20.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 }
+    { name: 'TELE SENA R$15,00', unitValue: 15.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'TELE SENA AMARELA R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'TELE SENA ROSA R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'TELE SENA VERDE R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'TELE SENA LILÁS R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'TELE SENA VERMELHA R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'FEDERAL R$4,00', unitValue: 4.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'FEDERAL R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'TREVO DA SORTE R$2,50', unitValue: 2.50, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'SÓ O OURO R$2,50', unitValue: 2.50, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'RODA DA SORTE R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'CAÇA AO TESOURO R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
+    { name: 'VIP R$20,00', unitValue: 20.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 }
   ]);
 
   const [supplyItems, setSupplyItems] = useState<SupplyItem[]>([
-    { denomination: 'R$200,00', quantity: 0, value: 200.00 },
-    { denomination: 'R$100,00', quantity: 0, value: 100.00 },
-    { denomination: 'R$50,00', quantity: 0, value: 50.00 },
-    { denomination: 'R$20,00', quantity: 0, value: 20.00 },
-    { denomination: 'R$10,00', quantity: 0, value: 10.00 },
-    { denomination: 'R$5,00', quantity: 0, value: 5.00 },
-    { denomination: 'R$2,00', quantity: 0, value: 2.00 },
-    { denomination: 'R$1,00', quantity: 0, value: 1.00 },
-    { denomination: 'R$0,50', quantity: 0, value: 0.50 },
-    { denomination: 'R$0,25', quantity: 0, value: 0.25 },
-    { denomination: 'R$0,10', quantity: 0, value: 0.10 },
-    { denomination: 'R$0,05', quantity: 0, value: 0.05 }
+    { denomination: 'R$200,00', quantity: 0, total: 0 },
+    { denomination: 'R$100,00', quantity: 0, total: 0 },
+    { denomination: 'R$50,00', quantity: 0, total: 0 },
+    { denomination: 'R$20,00', quantity: 0, total: 0 },
+    { denomination: 'R$10,00', quantity: 0, total: 0 },
+    { denomination: 'R$5,00', quantity: 0, total: 0 },
+    { denomination: 'R$2,00', quantity: 0, total: 0 },
+    { denomination: 'R$1,00', quantity: 0, total: 0 },
+    { denomination: 'R$0,50', quantity: 0, total: 0 },
+    { denomination: 'R$0,25', quantity: 0, total: 0 },
+    { denomination: 'R$0,10', quantity: 0, total: 0 },
+    { denomination: 'R$0,05', quantity: 0, total: 0 }
   ]);
 
   useEffect(() => {
@@ -194,13 +193,16 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   };
 
   const parseCurrency = (value: string) => {
-    return parseFloat(value.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+    const cleanValue = value.replace(/[^\d,.-]/g, '').replace(',', '.');
+    return parseFloat(cleanValue) || 0;
   };
 
-  const handleCurrencyInput = (value: string) => {
-    const numericValue = value.replace(/\D/g, '');
-    const formattedValue = (parseInt(numericValue) / 100).toFixed(2);
-    return formattedValue.replace('.', ',');
+  const formatCurrencyInput = (value: string) => {
+    const numericValue = parseCurrency(value);
+    return numericValue.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
   };
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -212,8 +214,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
   const calculateProductValue = (product: Product) => {
     const sold = product.inicial + product.recebi - product.devolvi - product.final;
-    const unitValue = product.unitValue || product.customValue || 0;
-    return sold * unitValue;
+    return sold * product.unitValue;
   };
 
   const calculateTotalProducts = () => {
@@ -221,7 +222,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   };
 
   const calculateSupplyTotal = () => {
-    return supplyItems.reduce((total, item) => total + (item.quantity * item.value), 0);
+    return supplyItems.reduce((total, item) => total + item.total, 0);
   };
 
   const updateCashData = (field: keyof CashData, value: string) => {
@@ -229,18 +230,17 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     setCashData(prev => ({ ...prev, [field]: numericValue }));
   };
 
-  const updateProduct = (index: number, field: keyof Product, value: string | number) => {
+  const updateProduct = (index: number, field: keyof Product, value: string) => {
+    const numericValue = field === 'name' || field === 'unitValue' ? 0 : parseInt(value) || 0;
     setProducts(prev => prev.map((product, i) => 
-      i === index ? { ...product, [field]: typeof value === 'string' ? parseInt(value) || 0 : value } : product
+      i === index ? { ...product, [field]: numericValue } : product
     ));
   };
 
-  const updateSupplyItem = (index: number, field: 'quantity' | 'value', value: string) => {
+  const updateSupplyItem = (index: number, field: 'quantity' | 'total', value: string) => {
+    const numericValue = field === 'quantity' ? parseInt(value) || 0 : parseCurrency(value);
     setSupplyItems(prev => prev.map((item, i) => 
-      i === index ? { 
-        ...item, 
-        [field]: field === 'quantity' ? parseInt(value) || 0 : parseCurrency(value)
-      } : item
+      i === index ? { ...item, [field]: numericValue } : item
     ));
   };
 
@@ -310,18 +310,20 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Inicial</label>
                       <input
                         type="text"
-                        value={formatCurrency(cashData.moedaInicial)}
+                        value={cashData.moedaInicial ? formatCurrencyInput(cashData.moedaInicial.toString()) : ''}
                         onChange={(e) => updateCashData('moedaInicial', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0,00"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Inicial</label>
                       <input
                         type="text"
-                        value={formatCurrency(cashData.bolaoInicial)}
+                        value={cashData.bolaoInicial ? formatCurrencyInput(cashData.bolaoInicial.toString()) : ''}
                         onChange={(e) => updateCashData('bolaoInicial', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0,00"
                       />
                     </div>
                   </div>
@@ -331,18 +333,20 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Suprimento Inicial</label>
                       <input
                         type="text"
-                        value={formatCurrency(cashData.suprimentoInicial)}
+                        value={cashData.suprimentoInicial ? formatCurrencyInput(cashData.suprimentoInicial.toString()) : ''}
                         onChange={(e) => updateCashData('suprimentoInicial', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0,00"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Comissão Bolão</label>
                       <input
                         type="text"
-                        value={formatCurrency(cashData.comissaoBolao)}
+                        value={cashData.comissaoBolao ? formatCurrencyInput(cashData.comissaoBolao.toString()) : ''}
                         onChange={(e) => updateCashData('comissaoBolao', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0,00"
                       />
                     </div>
                   </div>
@@ -352,40 +356,43 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Venda Produtos</label>
                       <input
                         type="text"
-                        value={formatCurrency(cashData.vendaProdutos)}
+                        value={cashData.vendaProdutos ? formatCurrencyInput(cashData.vendaProdutos.toString()) : ''}
                         onChange={(e) => updateCashData('vendaProdutos', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0,00"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 1</label>
                       <input
                         type="text"
-                        value={formatCurrency(cashData.totalCaixa1)}
+                        value={cashData.totalCaixa1 ? formatCurrencyInput(cashData.totalCaixa1.toString()) : ''}
                         onChange={(e) => updateCashData('totalCaixa1', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0,00"
                       />
                     </div>
                   </div>
 
-                  {/* Continue with more fields... */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 2</label>
                       <input
                         type="text"
-                        value={formatCurrency(cashData.totalCaixa2)}
+                        value={cashData.totalCaixa2 ? formatCurrencyInput(cashData.totalCaixa2.toString()) : ''}
                         onChange={(e) => updateCashData('totalCaixa2', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0,00"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Prêmios Instantâneos</label>
                       <input
                         type="text"
-                        value={formatCurrency(cashData.premiosInstantaneos)}
+                        value={cashData.premiosInstantaneos ? formatCurrencyInput(cashData.premiosInstantaneos.toString()) : ''}
                         onChange={(e) => updateCashData('premiosInstantaneos', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="0,00"
                       />
                     </div>
                   </div>
@@ -399,72 +406,413 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 1</label>
                         <input
                           type="text"
-                          value={formatCurrency(cashData.sangriaCorpvs1)}
+                          value={cashData.sangriaCorpvs1 ? formatCurrencyInput(cashData.sangriaCorpvs1.toString()) : ''}
                           onChange={(e) => updateCashData('sangriaCorpvs1', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 2</label>
                         <input
                           type="text"
-                          value={formatCurrency(cashData.sangriaCorpvs2)}
+                          value={cashData.sangriaCorpvs2 ? formatCurrencyInput(cashData.sangriaCorpvs2.toString()) : ''}
                           onChange={(e) => updateCashData('sangriaCorpvs2', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 3</label>
+                        <input
+                          type="text"
+                          value={cashData.sangriaCorpvs3 ? formatCurrencyInput(cashData.sangriaCorpvs3.toString()) : ''}
+                          onChange={(e) => updateCashData('sangriaCorpvs3', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 4</label>
+                        <input
+                          type="text"
+                          value={cashData.sangriaCorpvs4 ? formatCurrencyInput(cashData.sangriaCorpvs4.toString()) : ''}
+                          onChange={(e) => updateCashData('sangriaCorpvs4', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 5</label>
+                        <input
+                          type="text"
+                          value={cashData.sangriaCorpvs5 ? formatCurrencyInput(cashData.sangriaCorpvs5.toString()) : ''}
+                          onChange={(e) => updateCashData('sangriaCorpvs5', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 1</label>
+                        <input
+                          type="text"
+                          value={cashData.sangriaCofre1 ? formatCurrencyInput(cashData.sangriaCofre1.toString()) : ''}
+                          onChange={(e) => updateCashData('sangriaCofre1', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 2</label>
+                        <input
+                          type="text"
+                          value={cashData.sangriaCofre2 ? formatCurrencyInput(cashData.sangriaCofre2.toString()) : ''}
+                          onChange={(e) => updateCashData('sangriaCofre2', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 3</label>
+                        <input
+                          type="text"
+                          value={cashData.sangriaCofre3 ? formatCurrencyInput(cashData.sangriaCofre3.toString()) : ''}
+                          onChange={(e) => updateCashData('sangriaCofre3', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 4</label>
+                        <input
+                          type="text"
+                          value={cashData.sangriaCofre4 ? formatCurrencyInput(cashData.sangriaCofre4.toString()) : ''}
+                          onChange={(e) => updateCashData('sangriaCofre4', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 5</label>
+                        <input
+                          type="text"
+                          value={cashData.sangriaCofre5 ? formatCurrencyInput(cashData.sangriaCofre5.toString()) : ''}
+                          onChange={(e) => updateCashData('sangriaCofre5', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 1</label>
+                        <input
+                          type="text"
+                          value={cashData.pixMalote1 ? formatCurrencyInput(cashData.pixMalote1.toString()) : ''}
+                          onChange={(e) => updateCashData('pixMalote1', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 2</label>
+                        <input
+                          type="text"
+                          value={cashData.pixMalote2 ? formatCurrencyInput(cashData.pixMalote2.toString()) : ''}
+                          onChange={(e) => updateCashData('pixMalote2', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 3</label>
+                        <input
+                          type="text"
+                          value={cashData.pixMalote3 ? formatCurrencyInput(cashData.pixMalote3.toString()) : ''}
+                          onChange={(e) => updateCashData('pixMalote3', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 4</label>
+                        <input
+                          type="text"
+                          value={cashData.pixMalote4 ? formatCurrencyInput(cashData.pixMalote4.toString()) : ''}
+                          onChange={(e) => updateCashData('pixMalote4', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 5</label>
+                        <input
+                          type="text"
+                          value={cashData.pixMalote5 ? formatCurrencyInput(cashData.pixMalote5.toString()) : ''}
+                          onChange={(e) => updateCashData('pixMalote5', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 1</label>
+                        <input
+                          type="text"
+                          value={cashData.recebidoCaixa1 ? formatCurrencyInput(cashData.recebidoCaixa1.toString()) : ''}
+                          onChange={(e) => updateCashData('recebidoCaixa1', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 2</label>
+                        <input
+                          type="text"
+                          value={cashData.recebidoCaixa2 ? formatCurrencyInput(cashData.recebidoCaixa2.toString()) : ''}
+                          onChange={(e) => updateCashData('recebidoCaixa2', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 3</label>
+                        <input
+                          type="text"
+                          value={cashData.recebidoCaixa3 ? formatCurrencyInput(cashData.recebidoCaixa3.toString()) : ''}
+                          onChange={(e) => updateCashData('recebidoCaixa3', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 4</label>
+                        <input
+                          type="text"
+                          value={cashData.recebidoCaixa4 ? formatCurrencyInput(cashData.recebidoCaixa4.toString()) : ''}
+                          onChange={(e) => updateCashData('recebidoCaixa4', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 5</label>
+                        <input
+                          type="text"
+                          value={cashData.recebidoCaixa5 ? formatCurrencyInput(cashData.recebidoCaixa5.toString()) : ''}
+                          onChange={(e) => updateCashData('recebidoCaixa5', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 6</label>
+                        <input
+                          type="text"
+                          value={cashData.recebidoCaixa6 ? formatCurrencyInput(cashData.recebidoCaixa6.toString()) : ''}
+                          onChange={(e) => updateCashData('recebidoCaixa6', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 1</label>
+                        <input
+                          type="text"
+                          value={cashData.valeLoteria1 ? formatCurrencyInput(cashData.valeLoteria1.toString()) : ''}
+                          onChange={(e) => updateCashData('valeLoteria1', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 2</label>
+                        <input
+                          type="text"
+                          value={cashData.valeLoteria2 ? formatCurrencyInput(cashData.valeLoteria2.toString()) : ''}
+                          onChange={(e) => updateCashData('valeLoteria2', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 3</label>
+                        <input
+                          type="text"
+                          value={cashData.valeLoteria3 ? formatCurrencyInput(cashData.valeLoteria3.toString()) : ''}
+                          onChange={(e) => updateCashData('valeLoteria3', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 4</label>
+                        <input
+                          type="text"
+                          value={cashData.valeLoteria4 ? formatCurrencyInput(cashData.valeLoteria4.toString()) : ''}
+                          onChange={(e) => updateCashData('valeLoteria4', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 5</label>
+                        <input
+                          type="text"
+                          value={cashData.valeLoteria5 ? formatCurrencyInput(cashData.valeLoteria5.toString()) : ''}
+                          onChange={(e) => updateCashData('valeLoteria5', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 1</label>
+                        <input
+                          type="text"
+                          value={cashData.repassadoValor1 ? formatCurrencyInput(cashData.repassadoValor1.toString()) : ''}
+                          onChange={(e) => updateCashData('repassadoValor1', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 2</label>
+                        <input
+                          type="text"
+                          value={cashData.repassadoValor2 ? formatCurrencyInput(cashData.repassadoValor2.toString()) : ''}
+                          onChange={(e) => updateCashData('repassadoValor2', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 3</label>
+                        <input
+                          type="text"
+                          value={cashData.repassadoValor3 ? formatCurrencyInput(cashData.repassadoValor3.toString()) : ''}
+                          onChange={(e) => updateCashData('repassadoValor3', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 4</label>
+                        <input
+                          type="text"
+                          value={cashData.repassadoValor4 ? formatCurrencyInput(cashData.repassadoValor4.toString()) : ''}
+                          onChange={(e) => updateCashData('repassadoValor4', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 5</label>
+                        <input
+                          type="text"
+                          value={cashData.repassadoValor5 ? formatCurrencyInput(cashData.repassadoValor5.toString()) : ''}
+                          onChange={(e) => updateCashData('repassadoValor5', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Final</label>
                         <input
                           type="text"
-                          value={formatCurrency(cashData.sangriaFinal)}
+                          value={cashData.sangriaFinal ? formatCurrencyInput(cashData.sangriaFinal.toString()) : ''}
                           onChange={(e) => updateCashData('sangriaFinal', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Final</label>
-                        <input
-                          type="text"
-                          value={formatCurrency(cashData.moedaFinal)}
-                          onChange={(e) => updateCashData('moedaFinal', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Final</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Final</label>
                         <input
                           type="text"
-                          value={formatCurrency(cashData.bolaoFinal)}
-                          onChange={(e) => updateCashData('bolaoFinal', e.target.value)}
+                          value={cashData.moedaFinal ? formatCurrencyInput(cashData.moedaFinal.toString()) : ''}
+                          onChange={(e) => updateCashData('moedaFinal', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Resgates</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Final</label>
                         <input
                           type="text"
-                          value={formatCurrency(cashData.resgates)}
-                          onChange={(e) => updateCashData('resgates', e.target.value)}
+                          value={cashData.bolaoFinal ? formatCurrencyInput(cashData.bolaoFinal.toString()) : ''}
+                          onChange={(e) => updateCashData('bolaoFinal', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
                         />
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Diferença</label>
-                      <input
-                        type="text"
-                        value={formatCurrency(cashData.diferenca)}
-                        onChange={(e) => updateCashData('diferenca', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Resgates</label>
+                        <input
+                          type="text"
+                          value={cashData.resgates ? formatCurrencyInput(cashData.resgates.toString()) : ''}
+                          onChange={(e) => updateCashData('resgates', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Diferença</label>
+                        <input
+                          type="text"
+                          value={cashData.diferenca ? formatCurrencyInput(cashData.diferenca.toString()) : ''}
+                          onChange={(e) => updateCashData('diferenca', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0,00"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -492,7 +840,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Recebi</th>
                           <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Devolvi</th>
                           <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Final</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Valor Unit.</th>
                           <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Valor Vendido</th>
                         </tr>
                       </thead>
@@ -505,47 +852,38 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                             <td className="border border-gray-300 px-2 py-2">
                               <input
                                 type="number"
-                                value={product.inicial}
+                                value={product.inicial || ''}
                                 onChange={(e) => updateProduct(index, 'inicial', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
                                 type="number"
-                                value={product.recebi}
+                                value={product.recebi || ''}
                                 onChange={(e) => updateProduct(index, 'recebi', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
                                 type="number"
-                                value={product.devolvi}
+                                value={product.devolvi || ''}
                                 onChange={(e) => updateProduct(index, 'devolvi', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
                                 type="number"
-                                value={product.final}
+                                value={product.final || ''}
                                 onChange={(e) => updateProduct(index, 'final', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
+                                placeholder="0"
                               />
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2">
-                              {product.unitValue ? (
-                                <span className="text-sm text-center block">{formatCurrency(product.unitValue)}</span>
-                              ) : (
-                                <input
-                                  type="text"
-                                  value={product.customValue ? formatCurrency(product.customValue) : ''}
-                                  onChange={(e) => updateProduct(index, 'customValue', parseCurrency(e.target.value))}
-                                  className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                  placeholder="R$ 0,00"
-                                />
-                              )}
                             </td>
                             <td className="border border-gray-300 px-2 py-2 text-center text-sm font-semibold">
                               {formatCurrency(calculateProductValue(product))}
@@ -553,7 +891,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           </tr>
                         ))}
                         <tr className="bg-blue-50 font-bold">
-                          <td colSpan={6} className="border border-gray-300 px-2 py-2 text-right text-sm font-bold">
+                          <td colSpan={5} className="border border-gray-300 px-2 py-2 text-right text-sm font-bold">
                             Valor Total:
                           </td>
                           <td className="border border-gray-300 px-2 py-2 text-center text-sm font-bold">
@@ -585,7 +923,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <tr className="bg-gray-100">
                           <th className="border border-gray-300 px-2 py-2 text-left text-sm font-medium">Denominação</th>
                           <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Quantidade</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Valor da Cédula/Moeda</th>
                           <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Total</th>
                         </tr>
                       </thead>
@@ -598,26 +935,25 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                             <td className="border border-gray-300 px-2 py-2">
                               <input
                                 type="number"
-                                value={item.quantity}
+                                value={item.quantity || ''}
                                 onChange={(e) => updateSupplyItem(index, 'quantity', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
                                 type="text"
-                                value={formatCurrency(item.value)}
-                                onChange={(e) => updateSupplyItem(index, 'value', e.target.value)}
+                                value={item.total ? formatCurrencyInput(item.total.toString()) : ''}
+                                onChange={(e) => updateSupplyItem(index, 'total', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
+                                placeholder="0,00"
                               />
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2 text-center text-sm font-semibold">
-                              {formatCurrency(item.quantity * item.value)}
                             </td>
                           </tr>
                         ))}
                         <tr className="bg-blue-50 font-bold">
-                          <td colSpan={3} className="border border-gray-300 px-2 py-2 text-right text-sm font-bold">
+                          <td colSpan={2} className="border border-gray-300 px-2 py-2 text-right text-sm font-bold">
                             Valor Total:
                           </td>
                           <td className="border border-gray-300 px-2 py-2 text-center text-sm font-bold">
