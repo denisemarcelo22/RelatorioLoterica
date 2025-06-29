@@ -23,6 +23,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [successMessage, setSuccessMessage] = useState('');
 
   const formatCPF = (value: string) => {
     return value
@@ -87,6 +88,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
     setLoading(true);
     setErrors({});
+    setSuccessMessage('');
 
     try {
       // Normalize email before sending to Supabase
@@ -118,7 +120,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           if (registrationError.message.includes('Please sign in with your credentials')) {
             // Switch to login tab and show success message
             setActiveTab('login');
-            setErrors({ email: 'Cadastro realizado com sucesso! Faça login com suas credenciais.' });
+            setSuccessMessage('Cadastro realizado com sucesso! Faça login com suas credenciais.');
             // Clear password fields for security
             setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
           } else {
@@ -155,6 +157,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       confirmPassword: ''
     });
     setErrors({});
+    setSuccessMessage('');
     setShowPassword(false);
     setShowConfirmPassword(false);
   };
@@ -174,6 +177,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     setFormData(prev => ({ ...prev, [field]: formattedValue }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+    if (successMessage) {
+      setSuccessMessage('');
     }
   };
 
@@ -218,6 +224,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
               Cadastro
             </button>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-700 text-sm">{successMessage}</p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {activeTab === 'register' && (
