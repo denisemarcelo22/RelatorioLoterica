@@ -9,9 +9,9 @@ import {
   Clock,
   Target,
   BarChart3,
-  Activity
+  Activity,
+  FileText
 } from 'lucide-react';
-import FormButton from './FormButton';
 import AuthModal from './AuthModal';
 import FormModal from './FormModal';
 
@@ -112,13 +112,17 @@ const Dashboard: React.FC = () => {
     setIsFormModalOpen(true);
   };
 
+  const handleLogout = () => {
+    setCurrentUser(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Dashboard Financeiro - Lotérica
               </h1>
@@ -126,11 +130,44 @@ const Dashboard: React.FC = () => {
                 {formatDate(currentTime)}
               </p>
             </div>
-            <div className="mt-4 md:mt-0 flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border">
-              <Clock className="w-5 h-5 text-blue-600" />
-              <span className="text-lg font-mono font-semibold text-gray-900">
-                {formatTime(currentTime)}
-              </span>
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              {/* Current Time */}
+              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-sm border">
+                <Clock className="w-5 h-5 text-blue-600" />
+                <span className="text-lg font-mono font-semibold text-gray-900">
+                  {formatTime(currentTime)}
+                </span>
+              </div>
+
+              {/* User Info and Form Button */}
+              <div className="flex items-center gap-3">
+                {currentUser && (
+                  <div className="bg-white px-4 py-2 rounded-lg shadow-sm border">
+                    <div className="text-sm text-gray-600">
+                      <span className="font-medium text-gray-900">{currentUser.name}</span>
+                      <span className="ml-2">Código: {currentUser.operatorCode}</span>
+                    </div>
+                  </div>
+                )}
+                
+                <button
+                  onClick={handleFormButtonClick}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-2 font-medium"
+                >
+                  <FileText className="w-5 h-5" />
+                  <span className="hidden sm:inline">Formulário</span>
+                </button>
+
+                {currentUser && (
+                  <button
+                    onClick={handleLogout}
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 text-sm font-medium"
+                  >
+                    Sair
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -359,9 +396,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Form Button */}
-      <FormButton onClick={handleFormButtonClick} />
 
       {/* Modals */}
       <AuthModal 
