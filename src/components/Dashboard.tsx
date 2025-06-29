@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import AuthModal from './AuthModal';
 import FormModal from './FormModal';
+import { User, signOut } from '../lib/supabase';
 
 interface TransactionData {
   totalRevenue: number;
@@ -30,17 +31,6 @@ interface TransactionData {
     revenue: number;
     transactions: number;
   }>;
-}
-
-interface User {
-  id: string;
-  name: string;
-  cpf: string;
-  email: string;
-  phone: string;
-  operatorCode: string;
-  password: string;
-  isAdmin: boolean;
 }
 
 const Dashboard: React.FC = () => {
@@ -112,8 +102,13 @@ const Dashboard: React.FC = () => {
     setIsFormModalOpen(true);
   };
 
-  const handleLogout = () => {
-    setCurrentUser(null);
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setCurrentUser(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
@@ -146,7 +141,7 @@ const Dashboard: React.FC = () => {
                   <div className="bg-white px-4 py-2 rounded-lg shadow-sm border">
                     <div className="text-sm text-gray-600">
                       <span className="font-medium text-gray-900">{currentUser.name}</span>
-                      <span className="ml-2">Código: {currentUser.operatorCode}</span>
+                      <span className="ml-2">Código: {currentUser.operator_code}</span>
                     </div>
                   </div>
                 )}

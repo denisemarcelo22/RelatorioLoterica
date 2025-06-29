@@ -1,27 +1,18 @@
 import React, { useState } from 'react';
 import { X, User, Mail, Phone, Key, Eye, EyeOff } from 'lucide-react';
-
-interface User {
-  id: string;
-  name: string;
-  cpf: string;
-  email: string;
-  phone: string;
-  operatorCode: string;
-  password: string;
-  isAdmin: boolean;
-}
+import { signIn, signUp, User as UserType } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLogin: (user: User) => void;
+  onLogin: (user: UserType) => void;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     cpf: '',
@@ -32,20 +23,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Simulated user storage (in real app, this would be in a database)
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: '1',
-      name: 'Administrador',
-      cpf: '000.000.000-00',
-      email: 'admin@loterica.com',
-      phone: '(11) 99999-9999',
-      operatorCode: '01',
-      password: 'admin123',
-      isAdmin: true
-    }
-  ]);
 
   const formatCPF = (value: string) => {
     return value
@@ -84,43 +61,47 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
 
-    if (activeTab === 'login') {
-      const user = users.find(u => u.email === formData.email && u.password === formData.password);
-      if (user) {
+    setLoading(true);
+    setErrors({});
+
+    try {
+      if (activeTab === 'login') {
+        const { user } = await signIn(formData.email, formData.password);
         onLogin(user);
         onClose();
         resetForm();
       } else {
-        setErrors({ email: 'Email ou senha incorretos' });
+        // Register
+        const { user } = await signUp({
+          name: formData.name,
+          cpf: formData.cpf,
+          email: formData.email,
+          phone: formData.phone,
+          operator_code: formData.operatorCode,
+          password: formData.password,
+          is_admin: formData.operatorCode === '01'
+        });
+
+        onLogin(user);
+        onClose();
+        resetForm();
       }
-    } else {
-      // Register
-      const existingUser = users.find(u => u.email === formData.email || u.cpf === formData.cpf);
-      if (existingUser) {
+    } catch (error: any) {
+      console.error('Auth error:', error);
+      if (error.message.includes('duplicate key')) {
         setErrors({ email: 'Email ou CPF já cadastrado' });
-        return;
+      } else if (error.message.includes('Invalid login credentials')) {
+        setErrors({ email: 'Email ou senha incorretos' });
+      } else {
+        setErrors({ email: error.message || 'Erro ao processar solicitação' });
       }
-
-      const newUser: User = {
-        id: Date.now().toString(),
-        name: formData.name,
-        cpf: formData.cpf,
-        email: formData.email,
-        phone: formData.phone,
-        operatorCode: formData.operatorCode,
-        password: formData.password,
-        isAdmin: formData.operatorCode === '01'
-      };
-
-      setUsers([...users, newUser]);
-      onLogin(newUser);
-      onClose();
-      resetForm();
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -214,6 +195,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                           errors.name ? 'border-red-500' : 'border-gray-300'
                         }`}
                         placeholder="Nome completo"
+                        disabled={loading}
                       />
                     </div>
                     {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
@@ -232,6 +214,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                       }`}
                       placeholder="000.000.000-00"
                       maxLength={14}
+                      disabled={loading}
                     />
                     {errors.cpf && <p className="text-red-500 text-xs mt-1">{errors.cpf}</p>}
                   </div>
@@ -253,6 +236,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                         }`}
                         placeholder="(11) 99999-9999"
                         maxLength={15}
+                        disabled={loading}
                       />
                     </div>
                     {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
@@ -273,6 +257,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                         }`}
                         placeholder="01"
                         maxLength={2}
+                        disabled={loading}
                       />
                     </div>
                     {errors.operatorCode && <p className="text-red-500 text-xs mt-1">{errors.operatorCode}</p>}
@@ -295,6 +280,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                     errors.email ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="email@exemplo.com"
+                  disabled={loading}
                 />
               </div>
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -314,11 +300,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                       errors.password ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Senha"
+                    disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    disabled={loading}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -340,11 +328,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                         errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Confirmar senha"
+                      disabled={loading}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      disabled={loading}
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -356,9 +346,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-2 px-4 rounded-lg font-medium transition-colors"
             >
-              {activeTab === 'login' ? 'Entrar' : 'Cadastrar'}
+              {loading ? 'Processando...' : (activeTab === 'login' ? 'Entrar' : 'Cadastrar')}
             </button>
           </form>
         </div>
