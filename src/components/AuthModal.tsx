@@ -41,6 +41,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       .replace(/(-\d{4})\d+?$/, '$1');
   };
 
+  const validateEmail = (email: string) => {
+    // Enhanced email validation regex that matches common email standards
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    
+    // Additional checks for common issues
+    if (!email || email.trim() === '') return false;
+    if (email.length > 254) return false; // RFC 5321 limit
+    if (email.includes('..')) return false; // No consecutive dots
+    if (email.startsWith('.') || email.endsWith('.')) return false; // No leading/trailing dots
+    if (email.includes(' ')) return false; // No spaces
+    
+    return emailRegex.test(email.trim().toLowerCase());
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -54,7 +68,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       }
     }
 
-    if (!formData.email.trim()) newErrors.email = 'Email é obrigatório';
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email é obrigatório';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'Email inválido. Verifique o formato do email.';
+    }
+
     if (!formData.password.trim()) newErrors.password = 'Senha é obrigatória';
 
     setErrors(newErrors);
@@ -70,8 +89,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
     setErrors({});
 
     try {
+      // Normalize email before sending to Supabase
+      const normalizedEmail = formData.email.trim().toLowerCase();
+
       if (activeTab === 'login') {
-        const { user } = await signIn(formData.email, formData.password);
+        const { user } = await signIn(normalizedEmail, formData.password);
         onLogin(user);
         onClose();
         resetForm();
@@ -80,7 +102,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
         const { user } = await signUp({
           name: formData.name,
           cpf: formData.cpf,
-          email: formData.email,
+          email: normalizedEmail,
           phone: formData.phone,
           operator_code: formData.operatorCode,
           password: formData.password,
@@ -97,6 +119,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
         setErrors({ email: 'Email ou CPF já cadastrado' });
       } else if (error.message.includes('Invalid login credentials')) {
         setErrors({ email: 'Email ou senha incorretos' });
+      } else if (error.message.includes('email_address_invalid') || error.message.includes('Email address') && error.message.includes('invalid')) {
+        setErrors({ email: 'Formato de email inválido. Verifique se o email está correto.' });
       } else if (error.message.includes('Database error')) {
         setErrors({ email: 'Erro no banco de dados. Tente novamente.' });
       } else {
@@ -129,6 +153,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
       formattedValue = formatCPF(value);
     } else if (field === 'phone') {
       formattedValue = formatPhone(value);
+    } else if (field === 'email') {
+      // Remove any leading/trailing whitespace from email
+      formattedValue = value.trim();
     }
 
     setFormData(prev => ({ ...prev, [field]: formattedValue }));
