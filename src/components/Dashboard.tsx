@@ -11,6 +11,9 @@ import {
   BarChart3,
   Activity
 } from 'lucide-react';
+import FormButton from './FormButton';
+import AuthModal from './AuthModal';
+import FormModal from './FormModal';
 
 interface TransactionData {
   totalRevenue: number;
@@ -29,8 +32,23 @@ interface TransactionData {
   }>;
 }
 
+interface User {
+  id: string;
+  name: string;
+  cpf: string;
+  email: string;
+  phone: string;
+  operatorCode: string;
+  password: string;
+  isAdmin: boolean;
+}
+
 const Dashboard: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  
   const [data] = useState<TransactionData>({
     totalRevenue: 45750.80,
     dailyTransactions: 342,
@@ -79,6 +97,19 @@ const Dashboard: React.FC = () => {
       month: 'long',
       day: 'numeric'
     });
+  };
+
+  const handleFormButtonClick = () => {
+    if (currentUser) {
+      setIsFormModalOpen(true);
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
+
+  const handleLogin = (user: User) => {
+    setCurrentUser(user);
+    setIsFormModalOpen(true);
   };
 
   return (
@@ -215,7 +246,7 @@ const Dashboard: React.FC = () => {
           {/* Cashier Performance */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-gray-900">Faturamento por Caixa</h2>
+              <h2 className="text-xl font-bold text-gray-900">Faturamento por Operador</h2>
               <Users className="w-6 h-6 text-green-500" />
             </div>
             <div className="space-y-4">
@@ -328,6 +359,24 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Form Button */}
+      <FormButton onClick={handleFormButtonClick} />
+
+      {/* Modals */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)}
+        onLogin={handleLogin}
+      />
+      
+      {currentUser && (
+        <FormModal 
+          isOpen={isFormModalOpen} 
+          onClose={() => setIsFormModalOpen(false)}
+          user={currentUser}
+        />
+      )}
     </div>
   );
 };
