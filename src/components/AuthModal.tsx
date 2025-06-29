@@ -99,19 +99,32 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
         resetForm();
       } else {
         // Register
-        const { user } = await signUp({
-          name: formData.name,
-          cpf: formData.cpf,
-          email: normalizedEmail,
-          phone: formData.phone,
-          operator_code: formData.operatorCode,
-          password: formData.password,
-          is_admin: formData.operatorCode === '01'
-        });
+        try {
+          const { user } = await signUp({
+            name: formData.name,
+            cpf: formData.cpf,
+            email: normalizedEmail,
+            phone: formData.phone,
+            operator_code: formData.operatorCode,
+            password: formData.password,
+            is_admin: formData.operatorCode === '01'
+          });
 
-        onLogin(user);
-        onClose();
-        resetForm();
+          onLogin(user);
+          onClose();
+          resetForm();
+        } catch (registrationError: any) {
+          // If registration fails with a message about signing in manually
+          if (registrationError.message.includes('Please sign in with your credentials')) {
+            // Switch to login tab and show success message
+            setActiveTab('login');
+            setErrors({ email: 'Cadastro realizado com sucesso! Faça login com suas credenciais.' });
+            // Clear password fields for security
+            setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
+          } else {
+            throw registrationError;
+          }
+        }
       }
     } catch (error: any) {
       console.error('Auth error:', error);
