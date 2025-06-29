@@ -21,10 +21,10 @@ interface FormModalProps {
 interface Product {
   name: string;
   unitValue?: number;
-  inicial: number;
-  recebi: number;
-  devolvi: number;
-  final: number;
+  inicial: string;
+  recebi: string;
+  devolvi: string;
+  final: string;
   customValue?: number;
 }
 
@@ -77,7 +77,7 @@ interface CashData {
 
 interface SupplyItem {
   denomination: string;
-  quantity: number;
+  quantity: string;
   value: number;
 }
 
@@ -139,34 +139,34 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   });
 
   const [products, setProducts] = useState<Product[]>([
-    { name: 'TELE SENA R$15,00', unitValue: 15.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA AMARELA R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA ROSA R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA VERDE R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA LILÁS R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA VERMELHA R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'FEDERAL R$4,00', unitValue: 4.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'FEDERAL R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TREVO DA SORTE R$2,50', unitValue: 2.50, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'SÓ O OURO R$2,50', unitValue: 2.50, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'RODA DA SORTE R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'CAÇA AO TESOURO R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'VIP R$20,00', unitValue: 20.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 }
+    { name: 'TELE SENA R$15,00', unitValue: 15.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'TELE SENA AMARELA R$10,00', unitValue: 10.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'TELE SENA ROSA R$5,00', unitValue: 5.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'TELE SENA VERDE R$5,00', unitValue: 5.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'TELE SENA LILÁS R$5,00', unitValue: 5.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'TELE SENA VERMELHA R$10,00', unitValue: 10.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'FEDERAL R$4,00', unitValue: 4.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'FEDERAL R$10,00', unitValue: 10.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'TREVO DA SORTE R$2,50', unitValue: 2.50, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'SÓ O OURO R$2,50', unitValue: 2.50, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'RODA DA SORTE R$5,00', unitValue: 5.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'CAÇA AO TESOURO R$10,00', unitValue: 10.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' },
+    { name: 'VIP R$20,00', unitValue: 20.00, inicial: '0', recebi: '0', devolvi: '0', final: '0' }
   ]);
 
   const [supplyItems, setSupplyItems] = useState<SupplyItem[]>([
-    { denomination: 'R$200,00', quantity: 0, value: 200.00 },
-    { denomination: 'R$100,00', quantity: 0, value: 100.00 },
-    { denomination: 'R$50,00', quantity: 0, value: 50.00 },
-    { denomination: 'R$20,00', quantity: 0, value: 20.00 },
-    { denomination: 'R$10,00', quantity: 0, value: 10.00 },
-    { denomination: 'R$5,00', quantity: 0, value: 5.00 },
-    { denomination: 'R$2,00', quantity: 0, value: 2.00 },
-    { denomination: 'R$1,00', quantity: 0, value: 1.00 },
-    { denomination: 'R$0,50', quantity: 0, value: 0.50 },
-    { denomination: 'R$0,25', quantity: 0, value: 0.25 },
-    { denomination: 'R$0,10', quantity: 0, value: 0.10 },
-    { denomination: 'R$0,05', quantity: 0, value: 0.05 }
+    { denomination: 'R$200,00', quantity: '0', value: 200.00 },
+    { denomination: 'R$100,00', quantity: '0', value: 100.00 },
+    { denomination: 'R$50,00', quantity: '0', value: 50.00 },
+    { denomination: 'R$20,00', quantity: '0', value: 20.00 },
+    { denomination: 'R$10,00', quantity: '0', value: 10.00 },
+    { denomination: 'R$5,00', quantity: '0', value: 5.00 },
+    { denomination: 'R$2,00', quantity: '0', value: 2.00 },
+    { denomination: 'R$1,00', quantity: '0', value: 1.00 },
+    { denomination: 'R$0,50', quantity: '0', value: 0.50 },
+    { denomination: 'R$0,25', quantity: '0', value: 0.25 },
+    { denomination: 'R$0,10', quantity: '0', value: 0.10 },
+    { denomination: 'R$0,05', quantity: '0', value: 0.05 }
   ]);
 
   useEffect(() => {
@@ -223,6 +223,20 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     return parseFloat(value.replace(',', '.')) || 0;
   };
 
+  // Função para formatar números inteiros (remove zero inicial)
+  const formatIntegerInput = (value: string) => {
+    // Remove tudo que não é dígito
+    let numericValue = value.replace(/\D/g, '');
+    
+    // Se não há dígitos, retorna string vazia
+    if (!numericValue) return '';
+    
+    // Remove zeros à esquerda, mas mantém pelo menos um dígito
+    numericValue = numericValue.replace(/^0+/, '') || '0';
+    
+    return numericValue;
+  };
+
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
       ...prev,
@@ -231,7 +245,12 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   };
 
   const calculateProductValue = (product: Product) => {
-    const sold = product.inicial + product.recebi - product.devolvi - product.final;
+    const inicial = parseInt(product.inicial) || 0;
+    const recebi = parseInt(product.recebi) || 0;
+    const devolvi = parseInt(product.devolvi) || 0;
+    const final = parseInt(product.final) || 0;
+    
+    const sold = inicial + recebi - devolvi - final;
     const unitValue = product.unitValue || product.customValue || 0;
     return sold * unitValue;
   };
@@ -241,7 +260,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   };
 
   const calculateSupplyTotal = () => {
-    return supplyItems.reduce((total, item) => total + (item.quantity * item.value), 0);
+    return supplyItems.reduce((total, item) => {
+      const quantity = parseInt(item.quantity) || 0;
+      return total + (quantity * item.value);
+    }, 0);
   };
 
   const updateCashData = (field: keyof CashData, value: string) => {
@@ -249,19 +271,43 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     setCashData(prev => ({ ...prev, [field]: maskedValue }));
   };
 
-  const updateProduct = (index: number, field: keyof Product, value: string | number) => {
-    setProducts(prev => prev.map((product, i) => 
-      i === index ? { ...product, [field]: typeof value === 'string' ? parseInt(value) || 0 : value } : product
-    ));
+  const updateProduct = (index: number, field: keyof Product, value: string) => {
+    if (field === 'inicial' || field === 'recebi' || field === 'devolvi' || field === 'final') {
+      const formattedValue = formatIntegerInput(value);
+      setProducts(prev => prev.map((product, i) => 
+        i === index ? { ...product, [field]: formattedValue } : product
+      ));
+    } else {
+      setProducts(prev => prev.map((product, i) => 
+        i === index ? { ...product, [field]: value } : product
+      ));
+    }
   };
 
   const updateSupplyItem = (index: number, field: 'quantity' | 'value', value: string) => {
-    setSupplyItems(prev => prev.map((item, i) => 
-      i === index ? { 
-        ...item, 
-        [field]: field === 'quantity' ? parseInt(value) || 0 : parseStringToNumber(value)
-      } : item
-    ));
+    if (field === 'quantity') {
+      const formattedValue = formatIntegerInput(value);
+      setSupplyItems(prev => prev.map((item, i) => 
+        i === index ? { ...item, [field]: formattedValue } : item
+      ));
+    } else {
+      setSupplyItems(prev => prev.map((item, i) => 
+        i === index ? { 
+          ...item, 
+          [field]: parseStringToNumber(value)
+        } : item
+      ));
+    }
+  };
+
+  // Função para lidar com o foco nos campos numéricos
+  const handleNumericFocus = (value: string) => {
+    return value === '0' ? '' : value;
+  };
+
+  // Função para lidar com o blur nos campos numéricos
+  const handleNumericBlur = (value: string) => {
+    return value === '' ? '0' : value;
   };
 
   if (!isOpen) return null;
@@ -871,38 +917,58 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
-                                type="number"
+                                type="text"
                                 value={product.inicial}
+                                onFocus={(e) => e.target.value = handleNumericFocus(e.target.value)}
+                                onBlur={(e) => {
+                                  const newValue = handleNumericBlur(e.target.value);
+                                  updateProduct(index, 'inicial', newValue);
+                                }}
                                 onChange={(e) => updateProduct(index, 'inicial', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
-                                type="number"
+                                type="text"
                                 value={product.recebi}
+                                onFocus={(e) => e.target.value = handleNumericFocus(e.target.value)}
+                                onBlur={(e) => {
+                                  const newValue = handleNumericBlur(e.target.value);
+                                  updateProduct(index, 'recebi', newValue);
+                                }}
                                 onChange={(e) => updateProduct(index, 'recebi', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
-                                type="number"
+                                type="text"
                                 value={product.devolvi}
+                                onFocus={(e) => e.target.value = handleNumericFocus(e.target.value)}
+                                onBlur={(e) => {
+                                  const newValue = handleNumericBlur(e.target.value);
+                                  updateProduct(index, 'devolvi', newValue);
+                                }}
                                 onChange={(e) => updateProduct(index, 'devolvi', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
-                                type="number"
+                                type="text"
                                 value={product.final}
+                                onFocus={(e) => e.target.value = handleNumericFocus(e.target.value)}
+                                onBlur={(e) => {
+                                  const newValue = handleNumericBlur(e.target.value);
+                                  updateProduct(index, 'final', newValue);
+                                }}
                                 onChange={(e) => updateProduct(index, 'final', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2 text-center text-sm font-semibold">
@@ -954,15 +1020,20 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                             </td>
                             <td className="border border-gray-300 px-2 py-2">
                               <input
-                                type="number"
+                                type="text"
                                 value={item.quantity}
+                                onFocus={(e) => e.target.value = handleNumericFocus(e.target.value)}
+                                onBlur={(e) => {
+                                  const newValue = handleNumericBlur(e.target.value);
+                                  updateSupplyItem(index, 'quantity', newValue);
+                                }}
                                 onChange={(e) => updateSupplyItem(index, 'quantity', e.target.value)}
                                 className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
+                                placeholder="0"
                               />
                             </td>
                             <td className="border border-gray-300 px-2 py-2 text-center text-sm font-semibold">
-                              {formatCurrency(item.quantity * item.value)}
+                              {formatCurrency((parseInt(item.quantity) || 0) * item.value)}
                             </td>
                           </tr>
                         ))}
