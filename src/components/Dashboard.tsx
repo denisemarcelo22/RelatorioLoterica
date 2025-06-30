@@ -37,15 +37,30 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-6">
       <div className="max-w-md w-full">
+        {/* Header with Logo and Title */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <img 
+              src="/logoFNZ.png" 
+              alt="FNZ Logo" 
+              className="w-16 h-16 object-contain"
+            />
+            <h1 className="text-4xl font-bold text-gray-900">
+              Relatório de Lotérica
+            </h1>
+          </div>
+          <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-indigo-600 mx-auto rounded-full"></div>
+        </div>
+
         {/* Welcome Card */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center">
           <div className="bg-gradient-to-r from-blue-100 to-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
             <FileText className="w-10 h-10 text-blue-600" />
           </div>
           
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Sistema Lotérica
-          </h1>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Sistema de Gestão
+          </h2>
           <p className="text-gray-600 mb-8">
             Faça login para acessar o sistema de relatórios financeiros
           </p>
