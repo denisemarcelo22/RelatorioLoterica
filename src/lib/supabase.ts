@@ -175,6 +175,14 @@ export const signUp = async (userData: {
       throw new Error('Failed to create auth user');
     }
 
+    // Check if email confirmation is required
+    const requiresEmailConfirmation = !authData.session;
+
+    if (requiresEmailConfirmation) {
+      // Throw a specific error that the AuthModal can catch
+      throw new Error('REGISTRATION_SUCCESS_EMAIL_CONFIRMATION_REQUIRED');
+    }
+
     // Create user object from auth data
     const user = createUserFromAuth(authData.user);
 
