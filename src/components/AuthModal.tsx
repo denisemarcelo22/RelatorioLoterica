@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { X, User, Mail, Phone, Key, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
-import { signIn, signUp, User as UserType } from '../lib/supabase';
+import { X, User, Mail, Phone, Key, Eye, EyeOff, AlertCircle, CheckCircle, RefreshCw } from 'lucide-react';
+import { signIn, signUp, User as UserType, resendEmailConfirmation } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -13,6 +13,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resendingEmail, setResendingEmail] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     cpf: '',
@@ -80,6 +81,36 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!formData.email.trim()) {
+      setErrors({ email: 'Digite seu email para reenviar a confirmação' });
+      return;
+    }
+
+    setResendingEmail(true);
+    setErrors({});
+    setSuccessMessage('');
+
+    try {
+      await resendEmailConfirmation(formData.email.trim().toLowerCase());
+      setSuccessMessage('Email de confirmação reenviado! Verifique sua caixa de entrada.');
+    } catch (error: any) {
+      console.error('Resend confirmation error:', error);
+      
+      if (error.message.includes('over_email_send_rate_limit') || error.message.includes('rate limit')) {
+        setErrors({ 
+          email: 'Muitas tentativas de reenvio. Aguarde alguns minutos antes de tentar novamente.' 
+        });
+      } else {
+        setErrors({ 
+          email: 'Erro ao reenviar email de confirmação. Tente novamente.' 
+        });
+      }
+    } finally {
+      setResendingEmail(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -269,12 +300,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
 
           {/* Email Confirmation Warning */}
           {emailConfirmationRequired && (
-            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start space-x-2">
-              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-              <div className="text-amber-700 text-sm">
-                <p className="font-medium mb-1">Confirmação de email necessária</p>
-                <p>Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta.</p>
+            <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-start space-x-2 mb-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="text-amber-700 text-sm">
+                  <p className="font-medium mb-1">Confirmação de email necessária</p>
+                  <p>Verifique sua caixa de entrada e clique no link de confirmação para ativar sua conta.</p>
+                </div>
               </div>
+              <button
+                onClick={handleResendConfirmation}
+                disabled={resendingEmail || !formData.email.trim()}
+                className="flex items-center space-x-2 text-amber-700 hover:text-amber-800 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <RefreshCw className={`w-4 h-4 ${resendingEmail ? 'animate-spin' : ''}`} />
+                <span>{resendingEmail ? 'Reenviando...' : 'Reenviar email de confirmação'}</span>
+              </button>
             </div>
           )}
 
