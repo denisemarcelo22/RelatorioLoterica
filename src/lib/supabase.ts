@@ -331,9 +331,9 @@ export const getCashReport = async (userId: string, date?: string) => {
     .select('*')
     .eq('user_id', userId)
     .eq('data_fechamento', reportDate)
-    .single();
+    .maybeSingle();
 
-  if (error && error.code !== 'PGRST116') throw error;
+  if (error) throw error;
   return data;
 };
 
