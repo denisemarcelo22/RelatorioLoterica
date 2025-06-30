@@ -260,78 +260,40 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     }).format(value);
   };
 
-  // Função para converter string de moeda para número
-  const parseCurrency = (value: string): number => {
-    if (!value) return 0;
+  // Função para converter entrada de texto em número
+  const parseMoneyInput = (value: string): number => {
+    if (!value || value.trim() === '') return 0;
+    
     // Remove tudo exceto números, vírgula e ponto
-    const cleanValue = value.replace(/[^\d,.-]/g, '');
-    // Substitui vírgula por ponto para conversão
-    const normalizedValue = cleanValue.replace(',', '.');
-    const parsed = parseFloat(normalizedValue);
+    let cleanValue = value.replace(/[^\d,.-]/g, '');
+    
+    // Se não tem números, retorna 0
+    if (!/\d/.test(cleanValue)) return 0;
+    
+    // Se tem vírgula, trata como separador decimal brasileiro
+    if (cleanValue.includes(',')) {
+      // Substitui vírgula por ponto para parseFloat
+      cleanValue = cleanValue.replace(',', '.');
+    }
+    
+    // Se tem múltiplos pontos, mantém apenas o último como decimal
+    const parts = cleanValue.split('.');
+    if (parts.length > 2) {
+      cleanValue = parts.slice(0, -1).join('') + '.' + parts[parts.length - 1];
+    }
+    
+    const parsed = parseFloat(cleanValue);
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  // Função melhorada para aplicar máscara de moeda com inserção manual
-  const applyCurrencyMask = (value: string): string => {
-    if (!value) return '';
-    
-    // Remove tudo exceto números
-    let numbers = value.replace(/\D/g, '');
-    
-    if (!numbers) return '';
-    
-    // Se o valor já tem vírgula ou ponto, trata como valor decimal
-    if (value.includes(',') || value.includes('.')) {
-      const cleanValue = value.replace(/[^\d,.-]/g, '');
-      const normalizedValue = cleanValue.replace(',', '.');
-      const parsed = parseFloat(normalizedValue);
-      
-      if (!isNaN(parsed)) {
-        return new Intl.NumberFormat('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        }).format(parsed);
-      }
-    }
-    
-    // Para números inteiros, trata como centavos
-    const cents = parseInt(numbers);
-    const reais = cents / 100;
-    
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(reais);
-  };
-
-  // Função para lidar com entrada manual de valores
-  const handleCurrencyInput = (value: string): number => {
-    if (!value) return 0;
-    
-    // Se contém vírgula ou ponto, trata como valor decimal direto
-    if (value.includes(',') || value.includes('.')) {
-      const cleanValue = value.replace(/[^\d,.-]/g, '');
-      const normalizedValue = cleanValue.replace(',', '.');
-      const parsed = parseFloat(normalizedValue);
-      return isNaN(parsed) ? 0 : parsed;
-    }
-    
-    // Remove símbolos de moeda e espaços
-    const cleanValue = value.replace(/[^\d]/g, '');
-    if (!cleanValue) return 0;
-    
-    // Se o valor tem mais de 2 dígitos, trata como centavos
-    const number = parseInt(cleanValue);
-    if (cleanValue.length > 2) {
-      return number / 100;
-    }
-    
-    // Para valores pequenos, trata como reais
-    return number;
+  // Função para formatar valor de entrada (sem máscara automática)
+  const formatInputValue = (value: number): string => {
+    if (value === 0) return '';
+    return value.toString().replace('.', ',');
   };
 
   const handleCashDataChange = (field: keyof CashData, value: string) => {
-    const numericValue = handleCurrencyInput(value);
+    const numericValue = parseMoneyInput(value);
     setCashData(prev => ({ ...prev, [field]: numericValue }));
   };
 
@@ -580,40 +542,40 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Inicial</label>
                         <input
                           type="text"
-                          value={cashData.moeda_inicial > 0 ? formatCurrency(cashData.moeda_inicial) : ''}
+                          value={formatInputValue(cashData.moeda_inicial)}
                           onChange={(e) => handleCashDataChange('moeda_inicial', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Inicial</label>
                         <input
                           type="text"
-                          value={cashData.bolao_inicial > 0 ? formatCurrency(cashData.bolao_inicial) : ''}
+                          value={formatInputValue(cashData.bolao_inicial)}
                           onChange={(e) => handleCashDataChange('bolao_inicial', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Suprimento Inicial</label>
                         <input
                           type="text"
-                          value={cashData.suprimento_inicial > 0 ? formatCurrency(cashData.suprimento_inicial) : ''}
+                          value={formatInputValue(cashData.suprimento_inicial)}
                           onChange={(e) => handleCashDataChange('suprimento_inicial', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Comissão Bolão</label>
                         <input
                           type="text"
-                          value={cashData.comissao_bolao > 0 ? formatCurrency(cashData.comissao_bolao) : ''}
+                          value={formatInputValue(cashData.comissao_bolao)}
                           onChange={(e) => handleCashDataChange('comissao_bolao', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                     </div>
@@ -627,40 +589,40 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Venda Produtos</label>
                         <input
                           type="text"
-                          value={cashData.venda_produtos > 0 ? formatCurrency(cashData.venda_produtos) : ''}
+                          value={formatInputValue(cashData.venda_produtos)}
                           onChange={(e) => handleCashDataChange('venda_produtos', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 1</label>
                         <input
                           type="text"
-                          value={cashData.total_caixa_1 > 0 ? formatCurrency(cashData.total_caixa_1) : ''}
+                          value={formatInputValue(cashData.total_caixa_1)}
                           onChange={(e) => handleCashDataChange('total_caixa_1', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 2</label>
                         <input
                           type="text"
-                          value={cashData.total_caixa_2 > 0 ? formatCurrency(cashData.total_caixa_2) : ''}
+                          value={formatInputValue(cashData.total_caixa_2)}
                           onChange={(e) => handleCashDataChange('total_caixa_2', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Prêmios Instantâneos</label>
                         <input
                           type="text"
-                          value={cashData.premios_instantaneos > 0 ? formatCurrency(cashData.premios_instantaneos) : ''}
+                          value={formatInputValue(cashData.premios_instantaneos)}
                           onChange={(e) => handleCashDataChange('premios_instantaneos', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                     </div>
@@ -677,11 +639,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           </label>
                           <input
                             type="text"
-                            value={cashData[`sangria_corpvs_${num}` as keyof CashData] > 0 ? 
-                              formatCurrency(cashData[`sangria_corpvs_${num}` as keyof CashData] as number) : ''}
+                            value={formatInputValue(cashData[`sangria_corpvs_${num}` as keyof CashData] as number)}
                             onChange={(e) => handleCashDataChange(`sangria_corpvs_${num}` as keyof CashData, e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="R$ 0,00"
+                            placeholder="0,00"
                           />
                         </div>
                       ))}
@@ -699,11 +660,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           </label>
                           <input
                             type="text"
-                            value={cashData[`sangria_cofre_${num}` as keyof CashData] > 0 ? 
-                              formatCurrency(cashData[`sangria_cofre_${num}` as keyof CashData] as number) : ''}
+                            value={formatInputValue(cashData[`sangria_cofre_${num}` as keyof CashData] as number)}
                             onChange={(e) => handleCashDataChange(`sangria_cofre_${num}` as keyof CashData, e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="R$ 0,00"
+                            placeholder="0,00"
                           />
                         </div>
                       ))}
@@ -721,11 +681,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           </label>
                           <input
                             type="text"
-                            value={cashData[`pix_malote_${num}` as keyof CashData] > 0 ? 
-                              formatCurrency(cashData[`pix_malote_${num}` as keyof CashData] as number) : ''}
+                            value={formatInputValue(cashData[`pix_malote_${num}` as keyof CashData] as number)}
                             onChange={(e) => handleCashDataChange(`pix_malote_${num}` as keyof CashData, e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="R$ 0,00"
+                            placeholder="0,00"
                           />
                         </div>
                       ))}
@@ -743,11 +702,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           </label>
                           <input
                             type="text"
-                            value={cashData[`recebido_caixa_${num}` as keyof CashData] > 0 ? 
-                              formatCurrency(cashData[`recebido_caixa_${num}` as keyof CashData] as number) : ''}
+                            value={formatInputValue(cashData[`recebido_caixa_${num}` as keyof CashData] as number)}
                             onChange={(e) => handleCashDataChange(`recebido_caixa_${num}` as keyof CashData, e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="R$ 0,00"
+                            placeholder="0,00"
                           />
                         </div>
                       ))}
@@ -765,11 +723,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           </label>
                           <input
                             type="text"
-                            value={cashData[`vale_loteria_${num}` as keyof CashData] > 0 ? 
-                              formatCurrency(cashData[`vale_loteria_${num}` as keyof CashData] as number) : ''}
+                            value={formatInputValue(cashData[`vale_loteria_${num}` as keyof CashData] as number)}
                             onChange={(e) => handleCashDataChange(`vale_loteria_${num}` as keyof CashData, e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="R$ 0,00"
+                            placeholder="0,00"
                           />
                         </div>
                       ))}
@@ -787,11 +744,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           </label>
                           <input
                             type="text"
-                            value={cashData[`repassado_caixa_${num}` as keyof CashData] > 0 ? 
-                              formatCurrency(cashData[`repassado_caixa_${num}` as keyof CashData] as number) : ''}
+                            value={formatInputValue(cashData[`repassado_caixa_${num}` as keyof CashData] as number)}
                             onChange={(e) => handleCashDataChange(`repassado_caixa_${num}` as keyof CashData, e.target.value)}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="R$ 0,00"
+                            placeholder="0,00"
                           />
                         </div>
                       ))}
@@ -806,40 +762,40 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Final</label>
                         <input
                           type="text"
-                          value={cashData.sangria_final > 0 ? formatCurrency(cashData.sangria_final) : ''}
+                          value={formatInputValue(cashData.sangria_final)}
                           onChange={(e) => handleCashDataChange('sangria_final', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Final</label>
                         <input
                           type="text"
-                          value={cashData.moeda_final > 0 ? formatCurrency(cashData.moeda_final) : ''}
+                          value={formatInputValue(cashData.moeda_final)}
                           onChange={(e) => handleCashDataChange('moeda_final', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Final</label>
                         <input
                           type="text"
-                          value={cashData.bolao_final > 0 ? formatCurrency(cashData.bolao_final) : ''}
+                          value={formatInputValue(cashData.bolao_final)}
                           onChange={(e) => handleCashDataChange('bolao_final', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Resgates</label>
                         <input
                           type="text"
-                          value={cashData.resgates > 0 ? formatCurrency(cashData.resgates) : ''}
+                          value={formatInputValue(cashData.resgates)}
                           onChange={(e) => handleCashDataChange('resgates', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="R$ 0,00"
+                          placeholder="0,00"
                         />
                       </div>
                     </div>
