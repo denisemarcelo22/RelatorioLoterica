@@ -18,7 +18,13 @@ import {
   TrendingUp,
   Trash2,
   AlertTriangle,
-  BarChart3
+  BarChart3,
+  Activity,
+  Target,
+  Trophy,
+  CreditCard,
+  Settings,
+  Shield
 } from 'lucide-react';
 import { User as UserType, getAllUsers, getCashReports, getProductReports, getSupplyReports, deleteUser } from '../lib/supabase';
 import OperatorRegistrationModal from './OperatorRegistrationModal';
@@ -58,6 +64,23 @@ interface DeleteConfirmationModalProps {
   onConfirm: () => void;
   operatorName: string;
   loading: boolean;
+}
+
+interface TransactionData {
+  totalRevenue: number;
+  dailyTransactions: number;
+  totalGames: number;
+  averageTicket: number;
+  topGames: Array<{
+    name: string;
+    sales: number;
+    percentage: number;
+  }>;
+  cashierData: Array<{
+    name: string;
+    revenue: number;
+    transactions: number;
+  }>;
 }
 
 const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
@@ -144,6 +167,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     loading: false
   });
 
+  // Dashboard data
+  const [data] = useState<TransactionData>({
+    totalRevenue: 45750.80,
+    dailyTransactions: 342,
+    totalGames: 1250,
+    averageTicket: 133.77,
+    topGames: [
+      { name: 'Mega-Sena', sales: 15420, percentage: 33.7 },
+      { name: 'Lotofácil', sales: 12350, percentage: 27.0 },
+      { name: 'Quina', sales: 8950, percentage: 19.6 },
+      { name: 'Lotomania', sales: 5230, percentage: 11.4 },
+      { name: 'Dupla Sena', sales: 3800, percentage: 8.3 }
+    ],
+    cashierData: [
+      { name: 'Maria Silva', revenue: 18450.30, transactions: 125 },
+      { name: 'João Santos', revenue: 15320.50, transactions: 108 },
+      { name: 'Ana Costa', revenue: 11980.00, transactions: 109 }
+    ]
+  });
+
   useEffect(() => {
     loadData();
   }, []);
@@ -198,6 +241,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     } finally {
       setDeleteModal(prev => ({ ...prev, loading: false }));
     }
+  };
+
+  const toggleOperatorPermission = async (operator: UserType) => {
+    // This would require a backend function to update user metadata
+    // For now, we'll show an alert
+    alert(`Funcionalidade de alteração de permissão será implementada em breve para ${operator.nome}`);
   };
 
   const formatCurrency = (value: number) => {
@@ -334,7 +383,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
               >
                 <div className="flex items-center gap-2">
                   <BarChart3 className="w-4 h-4" />
-                  Dashboard Geral
+                  Dashboard
                 </div>
               </button>
               <button
@@ -369,83 +418,242 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
           <div className="p-6">
             {activeTab === 'dashboard' && (
               <div className="space-y-8">
+                {/* Dashboard Header */}
                 <div className="text-center">
-                  <div className="bg-gradient-to-r from-blue-100 to-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <BarChart3 className="w-10 h-10 text-blue-600" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Dashboard Administrativo</h2>
-                  <p className="text-gray-600 mb-8">
-                    Visão geral do sistema de relatórios da lotérica
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    Dashboard Financeiro - Lotérica
+                  </h2>
+                  <p className="text-gray-600 capitalize">
+                    {new Date().toLocaleDateString('pt-BR', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </p>
                 </div>
 
-                {/* Quick Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-green-100 p-3 rounded-lg">
-                        <TrendingUp className="w-6 h-6 text-green-600" />
-                      </div>
+                {/* Main Metrics Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <h3 className="font-semibold text-gray-900">Crescimento</h3>
-                        <p className="text-2xl font-bold text-green-600">+15.3%</p>
-                        <p className="text-sm text-gray-600">vs. mês anterior</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-blue-100 p-3 rounded-lg">
-                        <Clock className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Média Diária</h3>
-                        <p className="text-2xl font-bold text-blue-600">{Math.round(totalRevenue / 30)}</p>
-                        <p className="text-sm text-gray-600">relatórios/dia</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-6 border border-purple-200">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-purple-100 p-3 rounded-lg">
-                        <Users className="w-6 h-6 text-purple-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Taxa Atividade</h3>
-                        <p className="text-2xl font-bold text-purple-600">
-                          {totalOperators > 0 ? Math.round((activeOperators / totalOperators) * 100) : 0}%
+                        <p className="text-gray-600 text-sm font-medium">Faturamento Total</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">
+                          {formatCurrency(data.totalRevenue)}
                         </p>
-                        <p className="text-sm text-gray-600">operadores ativos</p>
                       </div>
+                      <div className="bg-green-100 p-3 rounded-lg">
+                        <DollarSign className="w-6 h-6 text-green-600" />
+                      </div>
+                    </div>
+                    <div className="flex items-center mt-4 text-sm">
+                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                      <span className="text-green-600 font-medium">+12.5%</span>
+                      <span className="text-gray-500 ml-1">vs. ontem</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-600 text-sm font-medium">Transações do Dia</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">
+                          {data.dailyTransactions}
+                        </p>
+                      </div>
+                      <div className="bg-blue-100 p-3 rounded-lg">
+                        <Activity className="w-6 h-6 text-blue-600" />
+                      </div>
+                    </div>
+                    <div className="flex items-center mt-4 text-sm">
+                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                      <span className="text-green-600 font-medium">+8.2%</span>
+                      <span className="text-gray-500 ml-1">vs. ontem</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-600 text-sm font-medium">Total de Jogos</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">
+                          {data.totalGames}
+                        </p>
+                      </div>
+                      <div className="bg-purple-100 p-3 rounded-lg">
+                        <Target className="w-6 h-6 text-purple-600" />
+                      </div>
+                    </div>
+                    <div className="flex items-center mt-4 text-sm">
+                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                      <span className="text-green-600 font-medium">+5.7%</span>
+                      <span className="text-gray-500 ml-1">vs. ontem</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-gray-600 text-sm font-medium">Ticket Médio</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">
+                          {formatCurrency(data.averageTicket)}
+                        </p>
+                      </div>
+                      <div className="bg-orange-100 p-3 rounded-lg">
+                        <BarChart3 className="w-6 h-6 text-orange-600" />
+                      </div>
+                    </div>
+                    <div className="flex items-center mt-4 text-sm">
+                      <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                      <span className="text-green-600 font-medium">+3.1%</span>
+                      <span className="text-gray-500 ml-1">vs. ontem</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Recent Activity */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Atividade Recente</h3>
-                  <div className="space-y-4">
-                    {reports.slice(0, 5).map((report) => (
-                      <div key={report.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
-                        <div className="flex items-center gap-3">
-                          <div className="bg-blue-100 p-2 rounded-lg">
-                            <FileText className="w-4 h-4 text-blue-600" />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  {/* Top Games */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold text-gray-900">Jogos Mais Vendidos</h2>
+                      <Trophy className="w-6 h-6 text-yellow-500" />
+                    </div>
+                    <div className="space-y-4">
+                      {data.topGames.map((game, index) => (
+                        <div key={game.name} className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+                              <span className="text-sm font-bold text-blue-600">
+                                {index + 1}
+                              </span>
+                            </div>
+                            <span className="font-medium text-gray-900">{game.name}</span>
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900">{report.operator_name}</p>
-                            <p className="text-sm text-gray-600">{formatDateTime(report.updated_at)}</p>
+                          <div className="text-right">
+                            <p className="font-semibold text-gray-900">
+                              {formatCurrency(game.sales)}
+                            </p>
+                            <p className="text-sm text-gray-500">{game.percentage}%</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-green-600">
-                            {formatCurrency(report.total_caixa_1 + report.total_caixa_2)}
-                          </p>
-                          <p className="text-sm text-gray-600">{formatDate(report.data_fechamento)}</p>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Cashier Performance */}
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold text-gray-900">Faturamento por Operador</h2>
+                      <Users className="w-6 h-6 text-green-500" />
+                    </div>
+                    <div className="space-y-4">
+                      {data.cashierData.map((cashier, index) => (
+                        <div key={cashier.name} className="border border-gray-100 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-semibold text-gray-900">{cashier.name}</h3>
+                            <div className="flex items-center gap-1">
+                              <div className={`w-3 h-3 rounded-full ${
+                                index === 0 ? 'bg-green-500' : 
+                                index === 1 ? 'bg-yellow-500' : 'bg-blue-500'
+                              }`}></div>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-gray-600">Faturamento</p>
+                              <p className="font-bold text-gray-900">
+                                {formatCurrency(cashier.revenue)}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-gray-600">Transações</p>
+                              <p className="font-bold text-gray-900">{cashier.transactions}</p>
+                            </div>
+                          </div>
+                          <div className="mt-3">
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-gray-600">Meta do dia</span>
+                              <span className="text-gray-900">
+                                {Math.round((cashier.revenue / 20000) * 100)}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${Math.min((cashier.revenue / 20000) * 100, 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <CreditCard className="w-6 h-6 text-blue-600" />
+                      <h3 className="font-semibold text-gray-900">Formas de Pagamento</h3>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Dinheiro</span>
+                        <span className="font-semibold">45%</span>
                       </div>
-                    ))}
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Cartão Débito</span>
+                        <span className="font-semibold">35%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Cartão Crédito</span>
+                        <span className="font-semibold">20%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Calendar className="w-6 h-6 text-purple-600" />
+                      <h3 className="font-semibold text-gray-900">Horário de Pico</h3>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">08:00 - 10:00</span>
+                        <span className="font-semibold">25%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">14:00 - 16:00</span>
+                        <span className="font-semibold">40%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">18:00 - 20:00</span>
+                        <span className="font-semibold">35%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <TrendingUp className="w-6 h-6 text-green-600" />
+                      <h3 className="font-semibold text-gray-900">Crescimento Semanal</h3>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Vendas</span>
+                        <span className="font-semibold text-green-600">+18.5%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Clientes</span>
+                        <span className="font-semibold text-green-600">+12.3%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Ticket Médio</span>
+                        <span className="font-semibold text-green-600">+5.7%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -534,14 +742,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
                               }`}>
                                 {operator.tipo_usuario === 'admin' ? 'Admin' : 'Operador'}
                               </span>
+                              
                               {operator.id !== currentUser.id && (
-                                <button
-                                  onClick={() => setDeleteModal({ isOpen: true, operator, loading: false })}
-                                  className="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-lg transition-colors"
-                                  title="Deletar operador"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => toggleOperatorPermission(operator)}
+                                    className="bg-yellow-100 hover:bg-yellow-200 text-yellow-600 p-2 rounded-lg transition-colors"
+                                    title="Alterar permissão"
+                                  >
+                                    <Settings className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteModal({ isOpen: true, operator, loading: false })}
+                                    className="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-lg transition-colors"
+                                    title="Deletar operador"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>
