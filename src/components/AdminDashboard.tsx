@@ -50,7 +50,7 @@ interface CashReportWithDetails {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'operators' | 'reports'>('operators');
+  const [activeTab, setActiveTab] = useState<'operators' | 'reports'>('reports'); // Changed default to reports
   const [operators, setOperators] = useState<UserType[]>([]);
   const [reports, setReports] = useState<CashReportWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,21 +68,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     try {
       setLoading(true);
       
-      // Carregar operadores
-      const operatorsData = await getAllUsers();
-      setOperators(operatorsData);
+      // Load operators (simplified since we only have current user)
+      try {
+        const operatorsData = await getAllUsers();
+        setOperators(operatorsData);
+      } catch (error) {
+        console.warn('Could not load operators:', error);
+        // Use current user as fallback
+        setOperators([currentUser]);
+      }
 
-      // Carregar relatórios
+      // Load reports
       const reportsData = await getCashReports();
       
-      // Enriquecer relatórios com nomes dos operadores
-      const enrichedReports = reportsData.map(report => {
-        const operator = operatorsData.find(op => op.user_id === report.user_id);
-        return {
-          ...report,
-          operator_name: operator?.nome || 'Operador não encontrado'
-        };
-      });
+      // Enrich reports with operator names (simplified)
+      const enrichedReports = reportsData.map(report => ({
+        ...report,
+        operator_name: `Operador ${report.cod_operador}`
+      }));
       
       setReports(enrichedReports);
     } catch (error) {
@@ -217,19 +220,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
           <div className="border-b">
             <nav className="flex space-x-8 px-6">
               <button
-                onClick={() => setActiveTab('operators')}
-                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'operators'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Gerenciar Operadores
-                </div>
-              </button>
-              <button
                 onClick={() => setActiveTab('reports')}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'reports'
@@ -240,6 +230,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   Relatórios dos Operadores
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('operators')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'operators'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  Gerenciar Operadores
                 </div>
               </button>
             </nav>
@@ -304,10 +307,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
                               <div className="flex items-center gap-1">
                                 <Mail className="w-4 h-4" />
                                 {operator.email}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Phone className="w-4 h-4" />
-                                {operator.telefone}
                               </div>
                               <div className="flex items-center gap-1">
                                 <Key className="w-4 h-4" />
