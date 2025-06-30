@@ -411,7 +411,7 @@ export const getSupplyReports = async (fechamentoId: string) => {
   return data;
 };
 
-// Get all users (admin only) - now using auth.users
+// Get all users from tb_usuario table (admin only)
 export const getAllUsers = async (): Promise<User[]> => {
   try {
     // Get current user to check if admin
@@ -427,11 +427,45 @@ export const getAllUsers = async (): Promise<User[]> => {
       throw new Error('Access denied. Admin privileges required.');
     }
 
-    // For now, return just the current user as we can't easily list all auth users
-    // In a real implementation, you'd need to use the Supabase Admin API
-    return [currentUserProfile];
+    // Get all users from tb_usuario table
+    const { data, error } = await supabase
+      .from('tb_usuario')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching users from tb_usuario:', error);
+      // If there's an error, return just the current user
+      return [currentUserProfile];
+    }
+
+    // Convert tb_usuario data to User interface
+    const users: User[] = data.map(usuario => ({
+      id: usuario.user_id,
+      email: usuario.email,
+      nome: usuario.nome,
+      cod_operador: usuario.cod_operador,
+      tipo_usuario: usuario.tipo_usuario,
+      ativo: usuario.ativo,
+      created_at: usuario.created_at,
+      updated_at: usuario.updated_at
+    }));
+
+    return users;
   } catch (error) {
     console.error('Error getting users:', error);
+    
+    // Fallback: return current user
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const currentUserProfile = createUserFromAuth(currentUser);
+        return [currentUserProfile];
+      }
+    } catch (fallbackError) {
+      console.error('Fallback error:', fallbackError);
+    }
+    
     throw error;
   }
 };

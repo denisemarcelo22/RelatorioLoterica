@@ -271,30 +271,67 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  // Função para aplicar máscara de moeda
+  // Função melhorada para aplicar máscara de moeda com inserção manual
   const applyCurrencyMask = (value: string): string => {
     if (!value) return '';
     
     // Remove tudo exceto números
-    const numbers = value.replace(/\D/g, '');
+    let numbers = value.replace(/\D/g, '');
     
     if (!numbers) return '';
     
-    // Converte para centavos
-    const cents = parseInt(numbers);
+    // Se o valor já tem vírgula ou ponto, trata como valor decimal
+    if (value.includes(',') || value.includes('.')) {
+      const cleanValue = value.replace(/[^\d,.-]/g, '');
+      const normalizedValue = cleanValue.replace(',', '.');
+      const parsed = parseFloat(normalizedValue);
+      
+      if (!isNaN(parsed)) {
+        return new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        }).format(parsed);
+      }
+    }
     
-    // Converte de volta para reais
+    // Para números inteiros, trata como centavos
+    const cents = parseInt(numbers);
     const reais = cents / 100;
     
-    // Formata como moeda brasileira
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(reais);
   };
 
+  // Função para lidar com entrada manual de valores
+  const handleCurrencyInput = (value: string): number => {
+    if (!value) return 0;
+    
+    // Se contém vírgula ou ponto, trata como valor decimal direto
+    if (value.includes(',') || value.includes('.')) {
+      const cleanValue = value.replace(/[^\d,.-]/g, '');
+      const normalizedValue = cleanValue.replace(',', '.');
+      const parsed = parseFloat(normalizedValue);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    
+    // Remove símbolos de moeda e espaços
+    const cleanValue = value.replace(/[^\d]/g, '');
+    if (!cleanValue) return 0;
+    
+    // Se o valor tem mais de 2 dígitos, trata como centavos
+    const number = parseInt(cleanValue);
+    if (cleanValue.length > 2) {
+      return number / 100;
+    }
+    
+    // Para valores pequenos, trata como reais
+    return number;
+  };
+
   const handleCashDataChange = (field: keyof CashData, value: string) => {
-    const numericValue = parseCurrency(value);
+    const numericValue = handleCurrencyInput(value);
     setCashData(prev => ({ ...prev, [field]: numericValue }));
   };
 
@@ -421,9 +458,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
         {/* Cabeçalho */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b p-6">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b p-6 flex-shrink-0">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Folhinha do Caixa</h2>
             
@@ -461,7 +498,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
         {/* Message */}
         {message && (
-          <div className={`p-4 border-b ${
+          <div className={`p-4 border-b flex-shrink-0 ${
             message.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
           }`}>
             <div className="flex items-center gap-2">
@@ -480,7 +517,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
         )}
 
         {/* Tabs */}
-        <div className="border-b bg-white">
+        <div className="border-b bg-white flex-shrink-0">
           <nav className="flex space-x-8 px-6">
             <button
               onClick={() => setActiveTab('cash')}
@@ -524,7 +561,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
           </nav>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-300px)]">
+        {/* Content Area - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -952,7 +990,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
           )}
         </div>
 
-        <div className="border-t bg-gray-50 px-6 py-4">
+        {/* Footer com botões - Sempre visível */}
+        <div className="border-t bg-gray-50 px-6 py-4 flex-shrink-0">
           <div className="flex justify-end gap-3">
             <button
               onClick={onClose}
