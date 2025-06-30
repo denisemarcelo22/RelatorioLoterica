@@ -119,6 +119,26 @@ const createUserFromAuth = (authUser: any, metadata?: any): User => {
   };
 };
 
+// Resend email confirmation function
+export const resendEmailConfirmation = async (email: string) => {
+  try {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
+
+    if (error) {
+      console.error('Resend confirmation error:', error);
+      throw error;
+    }
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('ResendEmailConfirmation error:', error);
+    throw error;
+  }
+};
+
 // Auth functions using only Supabase Auth
 export const signUp = async (userData: {
   name: string;
