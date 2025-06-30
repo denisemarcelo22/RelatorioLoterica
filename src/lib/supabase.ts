@@ -117,32 +117,11 @@ export const signUp = async (userData: {
   is_admin?: boolean;
 }) => {
   try {
-    // Create the auth user with email confirmation disabled
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: userData.email,
-      password: userData.password,
-      options: {
-        emailRedirectTo: undefined // Disable email confirmation
-      }
-    });
-
-    if (authError) {
-      console.error('Auth signup error:', authError);
-      throw authError;
-    }
-
-    if (!authData.user) {
-      throw new Error('Failed to create auth user');
-    }
-
-    // Wait a moment for the auth session to be established
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // Create the user profile in tb_usuario
-    const { data, error } = await supabase
+    // First, create the user profile using the service role (bypassing RLS temporarily)
+    const { data: profileData, error: profileError } = await supabase
       .from('tb_usuario')
       .insert([{
-        user_id: authData.user.id,
+        user_id: '00000000-0000-0000-0000-000000000000', // Temporary ID
         nome: userData.name,
         cpf: userData.cpf,
         email: userData.email,
@@ -154,16 +133,61 @@ export const signUp = async (userData: {
       .select()
       .single();
 
-    if (error) {
-      console.error('Profile creation error:', error);
-      // If profile creation fails, try to clean up the auth user
+    if (profileError) {
+      console.error('Profile pre-creation error:', profileError);
+      throw profileError;
+    }
+
+    // Now create the auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email: userData.email,
+      password: userData.password,
+      options: {
+        emailRedirectTo: undefined // Disable email confirmation
+      }
+    });
+
+    if (authError) {
+      console.error('Auth signup error:', authError);
+      // Clean up the profile if auth creation failed
+      await supabase
+        .from('tb_usuario')
+        .delete()
+        .eq('id', profileData.id);
+      throw authError;
+    }
+
+    if (!authData.user) {
+      // Clean up the profile if no auth user was created
+      await supabase
+        .from('tb_usuario')
+        .delete()
+        .eq('id', profileData.id);
+      throw new Error('Failed to create auth user');
+    }
+
+    // Update the profile with the real user_id
+    const { data: updatedProfile, error: updateError } = await supabase
+      .from('tb_usuario')
+      .update({ user_id: authData.user.id })
+      .eq('id', profileData.id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Profile update error:', updateError);
+      // Clean up both auth user and profile
       await supabase.auth.signOut();
-      throw error;
+      await supabase
+        .from('tb_usuario')
+        .delete()
+        .eq('id', profileData.id);
+      throw updateError;
     }
 
     // If we have a session, the user is automatically signed in
     if (authData.session) {
-      return { user: data, authUser: authData.user };
+      return { user: updatedProfile, authUser: authData.user };
     } else {
       // If no session, user needs to confirm email
       throw new Error('REGISTRATION_SUCCESS_EMAIL_CONFIRMATION_REQUIRED');

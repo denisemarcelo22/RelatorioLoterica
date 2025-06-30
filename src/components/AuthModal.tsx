@@ -139,6 +139,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
           email: 'Email não confirmado. Verifique sua caixa de entrada e clique no link de confirmação antes de fazer login.' 
         });
         setEmailConfirmationRequired(true);
+      } else if (error.message.includes('over_email_send_rate_limit') || error.message.includes('rate limit')) {
+        setErrors({ 
+          email: 'Muitas tentativas de cadastro. Aguarde alguns segundos antes de tentar novamente.' 
+        });
       } else if (error.message.includes('duplicate key') || error.message.includes('already registered')) {
         setErrors({ email: 'Email ou CPF já cadastrado' });
       } else if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
@@ -155,6 +159,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
         setErrors({ email: 'Perfil de usuário não encontrado. Entre em contato com o administrador.' });
       } else if (error.message.includes('No user returned from authentication')) {
         setErrors({ email: 'Erro na autenticação. Tente novamente.' });
+      } else if (error.message.includes('row-level security policy') || error.message.includes('RLS')) {
+        setErrors({ email: 'Erro de permissão. Entre em contato com o administrador.' });
       } else {
         setErrors({ email: error.message || 'Erro ao processar solicitação' });
       }
