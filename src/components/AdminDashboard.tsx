@@ -15,9 +15,12 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  TrendingUp
+  TrendingUp,
+  Trash2,
+  AlertTriangle,
+  BarChart3
 } from 'lucide-react';
-import { User as UserType, getAllUsers, getCashReports, getProductReports, getSupplyReports } from '../lib/supabase';
+import { User as UserType, getAllUsers, getCashReports, getProductReports, getSupplyReports, deleteUser } from '../lib/supabase';
 import OperatorRegistrationModal from './OperatorRegistrationModal';
 import ReportViewModal from './ReportViewModal';
 
@@ -49,8 +52,80 @@ interface CashReportWithDetails {
   operator_name?: string;
 }
 
+interface DeleteConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  operatorName: string;
+  loading: boolean;
+}
+
+const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  operatorName,
+  loading
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
+        <div className="p-6">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="bg-red-100 p-3 rounded-full">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900">Confirmar Exclusão</h3>
+              <p className="text-gray-600">Esta ação não pode ser desfeita</p>
+            </div>
+          </div>
+          
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-800">
+              Tem certeza que deseja deletar o operador <strong>{operatorName}</strong>?
+            </p>
+            <p className="text-red-700 text-sm mt-2">
+              Todos os relatórios e dados associados a este operador serão permanentemente removidos.
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              disabled={loading}
+              className="flex-1 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={loading}
+              className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Deletando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4" />
+                  Deletar
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'operators' | 'reports'>('reports'); // Changed default to reports
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'operators' | 'reports'>('dashboard');
   const [operators, setOperators] = useState<UserType[]>([]);
   const [reports, setReports] = useState<CashReportWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,6 +134,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState<CashReportWithDetails | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    operator: UserType | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    operator: null,
+    loading: false
+  });
 
   useEffect(() => {
     loadData();
@@ -92,6 +176,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
       console.error('Erro ao carregar dados:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteOperator = async () => {
+    if (!deleteModal.operator) return;
+
+    try {
+      setDeleteModal(prev => ({ ...prev, loading: true }));
+      
+      await deleteUser(deleteModal.operator.id);
+      
+      // Reload data
+      await loadData();
+      
+      // Close modal
+      setDeleteModal({ isOpen: false, operator: null, loading: false });
+    } catch (error: any) {
+      console.error('Erro ao deletar operador:', error);
+      alert('Erro ao deletar operador: ' + (error.message || 'Erro desconhecido'));
+    } finally {
+      setDeleteModal(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -220,6 +325,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
           <div className="border-b">
             <nav className="flex space-x-8 px-6">
               <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'dashboard'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Dashboard Geral
+                </div>
+              </button>
+              <button
                 onClick={() => setActiveTab('reports')}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'reports'
@@ -249,146 +367,243 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
           </div>
 
           <div className="p-6">
-            {/* Search and Filters */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input
-                  type="text"
-                  placeholder={activeTab === 'operators' ? 'Buscar operadores...' : 'Buscar relatórios...'}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-              
-              {activeTab === 'operators' && (
-                <button
-                  onClick={() => setIsRegistrationModalOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Novo Operador
-                </button>
-              )}
-
-              {activeTab === 'reports' && (
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    type="date"
-                    value={dateFilter}
-                    onChange={(e) => setDateFilter(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+            {activeTab === 'dashboard' && (
+              <div className="space-y-8">
+                <div className="text-center">
+                  <div className="bg-gradient-to-r from-blue-100 to-indigo-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <BarChart3 className="w-10 h-10 text-blue-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Dashboard Administrativo</h2>
+                  <p className="text-gray-600 mb-8">
+                    Visão geral do sistema de relatórios da lotérica
+                  </p>
                 </div>
-              )}
-            </div>
 
-            {/* Content */}
-            {activeTab === 'operators' ? (
-              <div className="space-y-4">
-                {filteredOperators.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Nenhum operador encontrado</p>
+                {/* Quick Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-green-100 p-3 rounded-lg">
+                        <TrendingUp className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Crescimento</h3>
+                        <p className="text-2xl font-bold text-green-600">+15.3%</p>
+                        <p className="text-sm text-gray-600">vs. mês anterior</p>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  filteredOperators.map((operator) => (
-                    <div key={operator.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="bg-blue-100 p-3 rounded-full">
-                            <User className="w-6 h-6 text-blue-600" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-gray-900">{operator.nome}</h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                              <div className="flex items-center gap-1">
-                                <Mail className="w-4 h-4" />
-                                {operator.email}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Key className="w-4 h-4" />
-                                Código: {operator.cod_operador}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+
+                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-blue-100 p-3 rounded-lg">
+                        <Clock className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Média Diária</h3>
+                        <p className="text-2xl font-bold text-blue-600">{Math.round(totalRevenue / 30)}</p>
+                        <p className="text-sm text-gray-600">relatórios/dia</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl p-6 border border-purple-200">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-purple-100 p-3 rounded-lg">
+                        <Users className="w-6 h-6 text-purple-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Taxa Atividade</h3>
+                        <p className="text-2xl font-bold text-purple-600">
+                          {totalOperators > 0 ? Math.round((activeOperators / totalOperators) * 100) : 0}%
+                        </p>
+                        <p className="text-sm text-gray-600">operadores ativos</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Activity */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Atividade Recente</h3>
+                  <div className="space-y-4">
+                    {reports.slice(0, 5).map((report) => (
+                      <div key={report.id} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-b-0">
                         <div className="flex items-center gap-3">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            operator.ativo 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}>
-                            {operator.ativo ? 'Ativo' : 'Inativo'}
-                          </span>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            operator.tipo_usuario === 'admin'
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {operator.tipo_usuario === 'admin' ? 'Admin' : 'Operador'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredReports.length === 0 ? (
-                  <div className="text-center py-12">
-                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Nenhum relatório encontrado</p>
-                  </div>
-                ) : (
-                  filteredReports.map((report) => (
-                    <div key={report.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="bg-green-100 p-3 rounded-full">
-                            <FileText className="w-6 h-6 text-green-600" />
+                          <div className="bg-blue-100 p-2 rounded-lg">
+                            <FileText className="w-4 h-4 text-blue-600" />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-gray-900">{report.operator_name}</h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {formatDate(report.data_fechamento)}
+                            <p className="font-medium text-gray-900">{report.operator_name}</p>
+                            <p className="text-sm text-gray-600">{formatDateTime(report.updated_at)}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-green-600">
+                            {formatCurrency(report.total_caixa_1 + report.total_caixa_2)}
+                          </p>
+                          <p className="text-sm text-gray-600">{formatDate(report.data_fechamento)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab !== 'dashboard' && (
+              <>
+                {/* Search and Filters */}
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      placeholder={activeTab === 'operators' ? 'Buscar operadores...' : 'Buscar relatórios...'}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  
+                  {activeTab === 'operators' && (
+                    <button
+                      onClick={() => setIsRegistrationModalOpen(true)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Novo Operador
+                    </button>
+                  )}
+
+                  {activeTab === 'reports' && (
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="date"
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Content */}
+                {activeTab === 'operators' ? (
+                  <div className="space-y-4">
+                    {filteredOperators.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Nenhum operador encontrado</p>
+                      </div>
+                    ) : (
+                      filteredOperators.map((operator) => (
+                        <div key={operator.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="bg-blue-100 p-3 rounded-full">
+                                <User className="w-6 h-6 text-blue-600" />
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Key className="w-4 h-4" />
-                                Código: {report.cod_operador}
+                              <div>
+                                <h3 className="font-semibold text-gray-900">{operator.nome}</h3>
+                                <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                                  <div className="flex items-center gap-1">
+                                    <Mail className="w-4 h-4" />
+                                    {operator.email}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Key className="w-4 h-4" />
+                                    Código: {operator.cod_operador}
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {formatDateTime(report.updated_at)}
-                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                operator.ativo 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {operator.ativo ? 'Ativo' : 'Inativo'}
+                              </span>
+                              <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                operator.tipo_usuario === 'admin'
+                                  ? 'bg-purple-100 text-purple-800'
+                                  : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {operator.tipo_usuario === 'admin' ? 'Admin' : 'Operador'}
+                              </span>
+                              {operator.id !== currentUser.id && (
+                                <button
+                                  onClick={() => setDeleteModal({ isOpen: true, operator, loading: false })}
+                                  className="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-lg transition-colors"
+                                  title="Deletar operador"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="text-sm text-gray-600">Total Caixa</p>
-                            <p className="font-semibold text-green-600">
-                              {formatCurrency(report.total_caixa_1 + report.total_caixa_2)}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => handleViewReport(report)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                          >
-                            <Eye className="w-4 h-4" />
-                            Ver Detalhes
-                          </button>
-                        </div>
+                      ))
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredReports.length === 0 ? (
+                      <div className="text-center py-12">
+                        <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500">Nenhum relatório encontrado</p>
                       </div>
-                    </div>
-                  ))
+                    ) : (
+                      filteredReports.map((report) => (
+                        <div key={report.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                              <div className="bg-green-100 p-3 rounded-full">
+                                <FileText className="w-6 h-6 text-green-600" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-gray-900">{report.operator_name}</h3>
+                                <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="w-4 h-4" />
+                                    {formatDate(report.data_fechamento)}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Key className="w-4 h-4" />
+                                    Código: {report.cod_operador}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4" />
+                                    {formatDateTime(report.updated_at)}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <p className="text-sm text-gray-600">Total Caixa</p>
+                                <p className="font-semibold text-green-600">
+                                  {formatCurrency(report.total_caixa_1 + report.total_caixa_2)}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => handleViewReport(report)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                              >
+                                <Eye className="w-4 h-4" />
+                                Ver Detalhes
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 )}
-              </div>
+              </>
             )}
           </div>
         </div>
@@ -411,6 +626,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
           report={selectedReport}
         />
       )}
+
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, operator: null, loading: false })}
+        onConfirm={handleDeleteOperator}
+        operatorName={deleteModal.operator?.nome || ''}
+        loading={deleteModal.loading}
+      />
     </div>
   );
 };

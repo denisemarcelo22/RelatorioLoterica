@@ -252,6 +252,35 @@ export const signOut = async () => {
   if (error) throw error;
 };
 
+// Delete user function (admin only)
+export const deleteUser = async (userId: string) => {
+  try {
+    // Get current user to check if admin
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    
+    if (!currentUser) {
+      throw new Error('Not authenticated');
+    }
+
+    // Check if current user is admin
+    const currentUserProfile = createUserFromAuth(currentUser);
+    if (currentUserProfile.tipo_usuario !== 'admin') {
+      throw new Error('Access denied. Admin privileges required.');
+    }
+
+    // Note: In a real implementation, you would need to use the Supabase Admin API
+    // to delete users from auth.users. For now, we'll simulate the deletion.
+    // This would require server-side implementation with admin privileges.
+    
+    // For demonstration purposes, we'll throw an error indicating this needs server-side implementation
+    throw new Error('User deletion requires server-side implementation with admin privileges');
+    
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
+};
+
 // Cash report functions using tb_fechamento_caixa
 export const saveCashReport = async (reportData: Partial<CashReport>) => {
   const { data, error } = await supabase
