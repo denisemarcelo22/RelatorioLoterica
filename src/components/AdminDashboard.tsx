@@ -225,15 +225,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     try {
       setDeleteModal(prev => ({ ...prev, loading: true }));
       
-      // For now, just simulate deletion by removing from local state
-      // In a real implementation, you would call deleteUser(deleteModal.operator.id)
+      // Simulate deletion by removing from local state
+      // In a real implementation, you would need server-side admin API to delete auth users
       setOperators(prev => prev.filter(op => op.id !== deleteModal.operator?.id));
+      
+      // Also remove any reports from this operator
+      setReports(prev => prev.filter(report => report.user_id !== deleteModal.operator?.id));
       
       // Close modal
       setDeleteModal({ isOpen: false, operator: null, loading: false });
       
-      // Show success message (you could add a toast notification here)
+      // Show success message
       alert(`Operador ${deleteModal.operator.nome} foi removido com sucesso.`);
+      
     } catch (error: any) {
       console.error('Erro ao deletar operador:', error);
       alert('Erro ao deletar operador: ' + (error.message || 'Erro desconhecido'));
