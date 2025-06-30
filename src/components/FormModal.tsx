@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Save, 
-  Calculator, 
   DollarSign, 
   Package, 
   Coins,
@@ -194,24 +193,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
       loadExistingData();
     }
   }, [isOpen, user.id]);
-
-  useEffect(() => {
-    // Calcular diferença automaticamente
-    const totalEntradas = cashData.moeda_inicial + cashData.bolao_inicial + cashData.suprimento_inicial + 
-                          cashData.comissao_bolao + cashData.venda_produtos;
-    
-    const totalSaidas = cashData.premios_instantaneos + cashData.sangria_final + cashData.resgates;
-    
-    const totalFinal = cashData.moeda_final + cashData.bolao_final;
-    
-    const diferenca = totalEntradas - totalSaidas - totalFinal;
-    
-    setCashData(prev => ({ ...prev, diferenca }));
-  }, [
-    cashData.moeda_inicial, cashData.bolao_inicial, cashData.suprimento_inicial,
-    cashData.comissao_bolao, cashData.venda_produtos, cashData.premios_instantaneos,
-    cashData.sangria_final, cashData.moeda_final, cashData.bolao_final, cashData.resgates
-  ]);
 
   // Recalcular valor vendido dos produtos
   useEffect(() => {
@@ -860,26 +841,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           />
                         </div>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Diferença */}
-                  <div className={`rounded-xl p-6 border-2 ${
-                    cashData.diferenca >= 0 ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'
-                  }`}>
-                    <div className="flex items-center gap-3 justify-center">
-                      <Calculator className="w-6 h-6 text-gray-600" />
-                      <h3 className="text-lg font-semibold text-gray-900">Diferença</h3>
-                    </div>
-                    <div className="text-center mt-4">
-                      <div className={`text-3xl font-bold ${
-                        cashData.diferenca >= 0 ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {formatCurrency(cashData.diferenca)}
-                      </div>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {cashData.diferenca >= 0 ? 'Sobra' : 'Falta'} no caixa
-                      </p>
                     </div>
                   </div>
                 </div>

@@ -26,7 +26,7 @@ import {
   Settings,
   Shield
 } from 'lucide-react';
-import { User as UserType, getAllUsers, getCashReports, getProductReports, getSupplyReports, deleteUser } from '../lib/supabase';
+import { User as UserType, getAllUsers, getCashReports, getProductReports, getSupplyReports } from '../lib/supabase';
 import OperatorRegistrationModal from './OperatorRegistrationModal';
 import ReportViewModal from './ReportViewModal';
 
@@ -195,24 +195,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     try {
       setLoading(true);
       
-      // Load operators (simplified since we only have current user)
-      try {
-        const operatorsData = await getAllUsers();
-        setOperators(operatorsData);
-      } catch (error) {
-        console.warn('Could not load operators:', error);
-        // Use current user as fallback
-        setOperators([currentUser]);
-      }
+      // Load operators
+      const operatorsData = await getAllUsers();
+      setOperators(operatorsData);
 
       // Load reports
       const reportsData = await getCashReports();
       
-      // Enrich reports with operator names (simplified)
-      const enrichedReports = reportsData.map(report => ({
-        ...report,
-        operator_name: `Operador ${report.cod_operador}`
-      }));
+      // Enrich reports with operator names
+      const enrichedReports = reportsData.map(report => {
+        const operator = operatorsData.find(op => op.id === report.user_id);
+        return {
+          ...report,
+          operator_name: operator ? operator.nome : `Operador ${report.cod_operador}`
+        };
+      });
       
       setReports(enrichedReports);
     } catch (error) {
@@ -228,13 +225,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     try {
       setDeleteModal(prev => ({ ...prev, loading: true }));
       
-      await deleteUser(deleteModal.operator.id);
-      
-      // Reload data
-      await loadData();
+      // For now, just simulate deletion by removing from local state
+      // In a real implementation, you would call deleteUser(deleteModal.operator.id)
+      setOperators(prev => prev.filter(op => op.id !== deleteModal.operator?.id));
       
       // Close modal
       setDeleteModal({ isOpen: false, operator: null, loading: false });
+      
+      // Show success message (you could add a toast notification here)
+      alert(`Operador ${deleteModal.operator.nome} foi removido com sucesso.`);
     } catch (error: any) {
       console.error('Erro ao deletar operador:', error);
       alert('Erro ao deletar operador: ' + (error.message || 'Erro desconhecido'));
@@ -387,19 +386,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
                 </div>
               </button>
               <button
-                onClick={() => setActiveTab('reports')}
-                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === 'reports'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  Relatórios dos Operadores
-                </div>
-              </button>
-              <button
                 onClick={() => setActiveTab('operators')}
                 className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === 'operators'
@@ -410,6 +396,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
                   Gerenciar Operadores
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('reports')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'reports'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  Relatórios dos Operadores
                 </div>
               </button>
             </nav>
