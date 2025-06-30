@@ -1,360 +1,314 @@
 import React, { useState, useEffect } from 'react';
-import { X, ChevronDown, ChevronUp, User, Calendar, Clock, Save } from 'lucide-react';
 import { 
-  User as UserType, 
+  X, 
+  Save, 
+  Calculator, 
+  DollarSign, 
+  Package, 
+  Coins,
+  Plus,
+  Minus,
+  AlertCircle,
+  CheckCircle
+} from 'lucide-react';
+import { 
+  User, 
   saveCashReport, 
-  getCashReport, 
   saveProductReports, 
-  getProductReports,
   saveSupplyReports,
-  getSupplyReports,
-  getAllUsers
+  getCashReport,
+  getProductReports,
+  getSupplyReports
 } from '../lib/supabase';
 
 interface FormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: UserType;
-}
-
-interface Product {
-  name: string;
-  unitValue?: number;
-  inicial: number;
-  recebi: number;
-  devolvi: number;
-  final: number;
-  customValue?: number;
+  user: User;
 }
 
 interface CashData {
-  moedaInicial: number;
-  bolaoInicial: number;
-  suprimentoInicial: number;
-  comissaoBolao: number;
-  vendaProdutos: number;
-  totalCaixa1: number;
-  totalCaixa2: number;
-  premiosInstantaneos: number;
-  sangriaCorpvs1: number;
-  sangriaCorpvs2: number;
-  sangriaCorpvs3: number;
-  sangriaCorpvs4: number;
-  sangriaCorpvs5: number;
-  sangriaCofre1: number;
-  sangriaCofre2: number;
-  sangriaCofre3: number;
-  sangriaCofre4: number;
-  sangriaCofre5: number;
-  pixMalote1: number;
-  pixMalote2: number;
-  pixMalote3: number;
-  pixMalote4: number;
-  pixMalote5: number;
-  recebidoCaixa1: number;
-  recebidoCaixa2: number;
-  recebidoCaixa3: number;
-  recebidoCaixa4: number;
-  recebidoCaixa5: number;
-  recebidoCaixa6: number;
-  valeLoteria1: number;
-  valeLoteria2: number;
-  valeLoteria3: number;
-  valeLoteria4: number;
-  valeLoteria5: number;
-  repassadoValor1: number;
-  repassadoValor2: number;
-  repassadoValor3: number;
-  repassadoValor4: number;
-  repassadoValor5: number;
-  sangriaFinal: number;
-  moedaFinal: number;
-  bolaoFinal: number;
+  moeda_inicial: number;
+  bolao_inicial: number;
+  suprimento_inicial: number;
+  comissao_bolao: number;
+  venda_produtos: number;
+  total_caixa_1: number;
+  total_caixa_2: number;
+  premios_instantaneos: number;
+  sangria_corpvs_1: number;
+  sangria_corpvs_2: number;
+  sangria_corpvs_3: number;
+  sangria_corpvs_4: number;
+  sangria_corpvs_5: number;
+  sangria_cofre_1: number;
+  sangria_cofre_2: number;
+  sangria_cofre_3: number;
+  sangria_cofre_4: number;
+  sangria_cofre_5: number;
+  pix_malote_1: number;
+  pix_malote_2: number;
+  pix_malote_3: number;
+  pix_malote_4: number;
+  pix_malote_5: number;
+  recebido_caixa_1: number;
+  recebido_caixa_2: number;
+  recebido_caixa_3: number;
+  recebido_caixa_4: number;
+  recebido_caixa_5: number;
+  recebido_caixa_6: number;
+  vale_loteria_1: number;
+  vale_loteria_2: number;
+  vale_loteria_3: number;
+  vale_loteria_4: number;
+  vale_loteria_5: number;
+  repassado_caixa_1: number;
+  repassado_caixa_2: number;
+  repassado_caixa_3: number;
+  repassado_caixa_4: number;
+  repassado_caixa_5: number;
+  sangria_final: number;
+  moeda_final: number;
+  bolao_final: number;
   resgates: number;
   diferenca: number;
 }
 
-interface SupplyItem {
-  denomination: string;
-  quantity: number;
-  value: number;
+interface ProductData {
+  nome_produto: string;
+  valor_unitario: number;
+  quantidade_inicial: number;
+  quantidade_recebida: number;
+  quantidade_devolvida: number;
+  quantidade_final: number;
+  valor_vendido: number;
+}
+
+interface SupplyData {
+  denominacao: string;
+  valor_unitario: number;
+  quantidade: number;
+  valor_total: number;
 }
 
 const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
-  const [expandedSections, setExpandedSections] = useState({
-    cash: true,
-    products: false,
-    supply: false
-  });
-  const [selectedOperator, setSelectedOperator] = useState(user.operator_code);
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [loading, setSaving] = useState(false);
-  const [allUsers, setAllUsers] = useState<UserType[]>([]);
-  const [currentReportId, setCurrentReportId] = useState<string | null>(null);
-
+  const [activeTab, setActiveTab] = useState<'cash' | 'products' | 'supplies'>('cash');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
   const [cashData, setCashData] = useState<CashData>({
-    moedaInicial: 0,
-    bolaoInicial: 0,
-    suprimentoInicial: 0,
-    comissaoBolao: 0,
-    vendaProdutos: 0,
-    totalCaixa1: 0,
-    totalCaixa2: 0,
-    premiosInstantaneos: 0,
-    sangriaCorpvs1: 0,
-    sangriaCorpvs2: 0,
-    sangriaCorpvs3: 0,
-    sangriaCorpvs4: 0,
-    sangriaCorpvs5: 0,
-    sangriaCofre1: 0,
-    sangriaCofre2: 0,
-    sangriaCofre3: 0,
-    sangriaCofre4: 0,
-    sangriaCofre5: 0,
-    pixMalote1: 0,
-    pixMalote2: 0,
-    pixMalote3: 0,
-    pixMalote4: 0,
-    pixMalote5: 0,
-    recebidoCaixa1: 0,
-    recebidoCaixa2: 0,
-    recebidoCaixa3: 0,
-    recebidoCaixa4: 0,
-    recebidoCaixa5: 0,
-    recebidoCaixa6: 0,
-    valeLoteria1: 0,
-    valeLoteria2: 0,
-    valeLoteria3: 0,
-    valeLoteria4: 0,
-    valeLoteria5: 0,
-    repassadoValor1: 0,
-    repassadoValor2: 0,
-    repassadoValor3: 0,
-    repassadoValor4: 0,
-    repassadoValor5: 0,
-    sangriaFinal: 0,
-    moedaFinal: 0,
-    bolaoFinal: 0,
+    moeda_inicial: 0,
+    bolao_inicial: 0,
+    suprimento_inicial: 0,
+    comissao_bolao: 0,
+    venda_produtos: 0,
+    total_caixa_1: 0,
+    total_caixa_2: 0,
+    premios_instantaneos: 0,
+    sangria_corpvs_1: 0,
+    sangria_corpvs_2: 0,
+    sangria_corpvs_3: 0,
+    sangria_corpvs_4: 0,
+    sangria_corpvs_5: 0,
+    sangria_cofre_1: 0,
+    sangria_cofre_2: 0,
+    sangria_cofre_3: 0,
+    sangria_cofre_4: 0,
+    sangria_cofre_5: 0,
+    pix_malote_1: 0,
+    pix_malote_2: 0,
+    pix_malote_3: 0,
+    pix_malote_4: 0,
+    pix_malote_5: 0,
+    recebido_caixa_1: 0,
+    recebido_caixa_2: 0,
+    recebido_caixa_3: 0,
+    recebido_caixa_4: 0,
+    recebido_caixa_5: 0,
+    recebido_caixa_6: 0,
+    vale_loteria_1: 0,
+    vale_loteria_2: 0,
+    vale_loteria_3: 0,
+    vale_loteria_4: 0,
+    vale_loteria_5: 0,
+    repassado_caixa_1: 0,
+    repassado_caixa_2: 0,
+    repassado_caixa_3: 0,
+    repassado_caixa_4: 0,
+    repassado_caixa_5: 0,
+    sangria_final: 0,
+    moeda_final: 0,
+    bolao_final: 0,
     resgates: 0,
     diferenca: 0
   });
 
-  const [products, setProducts] = useState<Product[]>([
-    { name: 'TELE SENA R$15,00', unitValue: 15.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA AMARELA R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA ROSA R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA VERDE R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA LILÁS R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TELE SENA VERMELHA R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'FEDERAL R$4,00', unitValue: 4.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'FEDERAL R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'TREVO DA SORTE R$2,50', unitValue: 2.50, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'SÓ O OURO R$2,50', unitValue: 2.50, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'RODA DA SORTE R$5,00', unitValue: 5.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'CAÇA AO TESOURO R$10,00', unitValue: 10.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 },
-    { name: 'VIP R$20,00', unitValue: 20.00, inicial: 0, recebi: 0, devolvi: 0, final: 0 }
-  ]);
-
-  const [supplyItems, setSupplyItems] = useState<SupplyItem[]>([
-    { denomination: 'R$200,00', quantity: 0, value: 200.00 },
-    { denomination: 'R$100,00', quantity: 0, value: 100.00 },
-    { denomination: 'R$50,00', quantity: 0, value: 50.00 },
-    { denomination: 'R$20,00', quantity: 0, value: 20.00 },
-    { denomination: 'R$10,00', quantity: 0, value: 10.00 },
-    { denomination: 'R$5,00', quantity: 0, value: 5.00 },
-    { denomination: 'R$2,00', quantity: 0, value: 2.00 },
-    { denomination: 'R$1,00', quantity: 0, value: 1.00 },
-    { denomination: 'R$0,50', quantity: 0, value: 0.50 },
-    { denomination: 'R$0,25', quantity: 0, value: 0.25 },
-    { denomination: 'R$0,10', quantity: 0, value: 0.10 },
-    { denomination: 'R$0,05', quantity: 0, value: 0.05 }
-  ]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (user.is_admin) {
-      loadAllUsers();
-    }
-  }, [user.is_admin]);
+  const [products, setProducts] = useState<ProductData[]>([]);
+  const [supplies, setSupplies] = useState<SupplyData[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       loadExistingData();
     }
-  }, [isOpen, selectedOperator]);
+  }, [isOpen, user.id]);
 
-  const loadAllUsers = async () => {
-    try {
-      const users = await getAllUsers();
-      setAllUsers(users);
-    } catch (error) {
-      console.error('Error loading users:', error);
-    }
-  };
+  useEffect(() => {
+    // Calcular diferença automaticamente
+    const totalEntradas = cashData.moeda_inicial + cashData.bolao_inicial + cashData.suprimento_inicial + 
+                          cashData.comissao_bolao + cashData.venda_produtos;
+    
+    const totalSaidas = cashData.premios_instantaneos + cashData.sangria_final + cashData.resgates;
+    
+    const totalFinal = cashData.moeda_final + cashData.bolao_final;
+    
+    const diferenca = totalEntradas - totalSaidas - totalFinal;
+    
+    setCashData(prev => ({ ...prev, diferenca }));
+  }, [
+    cashData.moeda_inicial, cashData.bolao_inicial, cashData.suprimento_inicial,
+    cashData.comissao_bolao, cashData.venda_produtos, cashData.premios_instantaneos,
+    cashData.sangria_final, cashData.moeda_final, cashData.bolao_final, cashData.resgates
+  ]);
 
   const loadExistingData = async () => {
     try {
-      const report = await getCashReport(selectedOperator);
-      if (report) {
-        setCurrentReportId(report.id);
+      setLoading(true);
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Carregar dados de fechamento existentes
+      const existingReport = await getCashReport(user.id, today);
+      if (existingReport) {
+        setCashData(existingReport);
         
-        // Load cash data
-        setCashData({
-          moedaInicial: report.moeda_inicial,
-          bolaoInicial: report.bolao_inicial,
-          suprimentoInicial: report.suprimento_inicial,
-          comissaoBolao: report.comissao_bolao,
-          vendaProdutos: report.venda_produtos,
-          totalCaixa1: report.total_caixa_1,
-          totalCaixa2: report.total_caixa_2,
-          premiosInstantaneos: report.premios_instantaneos,
-          sangriaCorpvs1: report.sangria_corpvs_1,
-          sangriaCorpvs2: report.sangria_corpvs_2,
-          sangriaCorpvs3: report.sangria_corpvs_3,
-          sangriaCorpvs4: report.sangria_corpvs_4,
-          sangriaCorpvs5: report.sangria_corpvs_5,
-          sangriaCofre1: report.sangria_cofre_1,
-          sangriaCofre2: report.sangria_cofre_2,
-          sangriaCofre3: report.sangria_cofre_3,
-          sangriaCofre4: report.sangria_cofre_4,
-          sangriaCofre5: report.sangria_cofre_5,
-          pixMalote1: report.pix_malote_1,
-          pixMalote2: report.pix_malote_2,
-          pixMalote3: report.pix_malote_3,
-          pixMalote4: report.pix_malote_4,
-          pixMalote5: report.pix_malote_5,
-          recebidoCaixa1: report.recebido_caixa_1,
-          recebidoCaixa2: report.recebido_caixa_2,
-          recebidoCaixa3: report.recebido_caixa_3,
-          recebidoCaixa4: report.recebido_caixa_4,
-          recebidoCaixa5: report.recebido_caixa_5,
-          recebidoCaixa6: report.recebido_caixa_6,
-          valeLoteria1: report.vale_loteria_1,
-          valeLoteria2: report.vale_loteria_2,
-          valeLoteria3: report.vale_loteria_3,
-          valeLoteria4: report.vale_loteria_4,
-          valeLoteria5: report.vale_loteria_5,
-          repassadoValor1: report.repassado_valor_1,
-          repassadoValor2: report.repassado_valor_2,
-          repassadoValor3: report.repassado_valor_3,
-          repassadoValor4: report.repassado_valor_4,
-          repassadoValor5: report.repassado_valor_5,
-          sangriaFinal: report.sangria_final,
-          moedaFinal: report.moeda_final,
-          bolaoFinal: report.bolao_final,
-          resgates: report.resgates,
-          diferenca: report.diferenca
-        });
-
-        // Load product data
-        const productReports = await getProductReports(report.id);
-        if (productReports.length > 0) {
-          setProducts(prev => prev.map(product => {
-            const savedProduct = productReports.find(p => p.product_name === product.name);
-            if (savedProduct) {
-              return {
-                ...product,
-                inicial: savedProduct.inicial,
-                recebi: savedProduct.recebi,
-                devolvi: savedProduct.devolvi,
-                final: savedProduct.final
-              };
-            }
-            return product;
-          }));
-        }
-
-        // Load supply data
-        const supplyReports = await getSupplyReports(report.id);
-        if (supplyReports.length > 0) {
-          setSupplyItems(prev => prev.map(item => {
-            const savedSupply = supplyReports.find(s => s.denomination === item.denomination);
-            if (savedSupply) {
-              return {
-                ...item,
-                quantity: savedSupply.quantity
-              };
-            }
-            return item;
-          }));
-        }
-      } else {
-        // Reset to default values if no report exists
-        resetFormData();
+        // Carregar produtos e suprimentos
+        const [productsData, suppliesData] = await Promise.all([
+          getProductReports(existingReport.id),
+          getSupplyReports(existingReport.id)
+        ]);
+        
+        setProducts(productsData);
+        setSupplies(suppliesData);
       }
     } catch (error) {
-      console.error('Error loading existing data:', error);
-      resetFormData();
+      console.error('Erro ao carregar dados:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const resetFormData = () => {
-    setCurrentReportId(null);
-    setCashData({
-      moedaInicial: 0,
-      bolaoInicial: 0,
-      suprimentoInicial: 0,
-      comissaoBolao: 0,
-      vendaProdutos: 0,
-      totalCaixa1: 0,
-      totalCaixa2: 0,
-      premiosInstantaneos: 0,
-      sangriaCorpvs1: 0,
-      sangriaCorpvs2: 0,
-      sangriaCorpvs3: 0,
-      sangriaCorpvs4: 0,
-      sangriaCorpvs5: 0,
-      sangriaCofre1: 0,
-      sangriaCofre2: 0,
-      sangriaCofre3: 0,
-      sangriaCofre4: 0,
-      sangriaCofre5: 0,
-      pixMalote1: 0,
-      pixMalote2: 0,
-      pixMalote3: 0,
-      pixMalote4: 0,
-      pixMalote5: 0,
-      recebidoCaixa1: 0,
-      recebidoCaixa2: 0,
-      recebidoCaixa3: 0,
-      recebidoCaixa4: 0,
-      recebidoCaixa5: 0,
-      recebidoCaixa6: 0,
-      valeLoteria1: 0,
-      valeLoteria2: 0,
-      valeLoteria3: 0,
-      valeLoteria4: 0,
-      valeLoteria5: 0,
-      repassadoValor1: 0,
-      repassadoValor2: 0,
-      repassadoValor3: 0,
-      repassadoValor4: 0,
-      repassadoValor5: 0,
-      sangriaFinal: 0,
-      moedaFinal: 0,
-      bolaoFinal: 0,
-      resgates: 0,
-      diferenca: 0
-    });
-    
-    setProducts(prev => prev.map(product => ({
-      ...product,
-      inicial: 0,
-      recebi: 0,
-      devolvi: 0,
-      final: 0
-    })));
+  const handleCashDataChange = (field: keyof CashData, value: number) => {
+    setCashData(prev => ({ ...prev, [field]: value }));
+  };
 
-    setSupplyItems(prev => prev.map(item => ({
-      ...item,
-      quantity: 0
-    })));
+  const addProduct = () => {
+    setProducts(prev => [...prev, {
+      nome_produto: '',
+      valor_unitario: 0,
+      quantidade_inicial: 0,
+      quantidade_recebida: 0,
+      quantidade_devolvida: 0,
+      quantidade_final: 0,
+      valor_vendido: 0
+    }]);
+  };
+
+  const removeProduct = (index: number) => {
+    setProducts(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateProduct = (index: number, field: keyof ProductData, value: string | number) => {
+    setProducts(prev => prev.map((product, i) => 
+      i === index ? { ...product, [field]: value } : product
+    ));
+  };
+
+  const addSupply = () => {
+    setSupplies(prev => [...prev, {
+      denominacao: '',
+      valor_unitario: 0,
+      quantidade: 0,
+      valor_total: 0
+    }]);
+  };
+
+  const removeSupply = (index: number) => {
+    setSupplies(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateSupply = (index: number, field: keyof SupplyData, value: string | number) => {
+    const newSupplies = [...supplies];
+    newSupplies[index] = { ...newSupplies[index], [field]: value };
+    
+    // Calcular valor total automaticamente
+    if (field === 'quantidade' || field === 'valor_unitario') {
+      newSupplies[index].valor_total = newSupplies[index].quantidade * newSupplies[index].valor_unitario;
+    }
+    
+    setSupplies(newSupplies);
+  };
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setMessage(null);
+
+      const today = new Date().toISOString().split('T')[0];
+
+      // Salvar dados de fechamento
+      const reportData = {
+        user_id: user.id,
+        cod_operador: user.cod_operador,
+        data_fechamento: today,
+        ...cashData
+      };
+
+      const savedReport = await saveCashReport(reportData);
+
+      // Salvar produtos se houver
+      if (products.length > 0) {
+        const productsToSave = products
+          .filter(p => p.nome_produto.trim())
+          .map(product => ({
+            user_id: user.id,
+            cod_operador: user.cod_operador,
+            ...product
+          }));
+        
+        if (productsToSave.length > 0) {
+          await saveProductReports(savedReport.id, productsToSave);
+        }
+      }
+
+      // Salvar suprimentos se houver
+      if (supplies.length > 0) {
+        const suppliesToSave = supplies
+          .filter(s => s.denominacao.trim())
+          .map(supply => ({
+            user_id: user.id,
+            cod_operador: user.cod_operador,
+            ...supply
+          }));
+        
+        if (suppliesToSave.length > 0) {
+          await saveSupplyReports(savedReport.id, suppliesToSave);
+        }
+      }
+
+      setMessage({ type: 'success', text: 'Relatório salvo com sucesso!' });
+      
+      // Fechar modal após 2 segundos
+      setTimeout(() => {
+        onClose();
+        setMessage(null);
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('Erro ao salvar:', error);
+      setMessage({ type: 'error', text: error.message || 'Erro ao salvar relatório' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -364,893 +318,577 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     }).format(value);
   };
 
-  const formatDateTime = (date: Date) => {
-    return date.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const handleCurrencyInput = (value: string) => {
-    // Remove all non-digit characters
-    const numericValue = value.replace(/\D/g, '');
-    
-    if (!numericValue) return 0;
-    
-    // Convert to number (cents to reais)
-    return parseFloat(numericValue) / 100;
-  };
-
-  const formatCurrencyInput = (value: number) => {
-    return value.toFixed(2).replace('.', ',');
-  };
-
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  const calculateProductValue = (product: Product) => {
-    const sold = product.inicial + product.recebi - product.devolvi - product.final;
-    const unitValue = product.unitValue || product.customValue || 0;
-    return sold * unitValue;
-  };
-
-  const calculateTotalProducts = () => {
-    return products.reduce((total, product) => total + calculateProductValue(product), 0);
-  };
-
-  const calculateSupplyTotal = () => {
-    return supplyItems.reduce((total, item) => total + (item.quantity * item.value), 0);
-  };
-
-  const updateCashData = (field: keyof CashData, value: string) => {
-    const numericValue = handleCurrencyInput(value);
-    setCashData(prev => ({ ...prev, [field]: numericValue }));
-  };
-
-  const updateProduct = (index: number, field: keyof Product, value: string | number) => {
-    setProducts(prev => prev.map((product, i) => 
-      i === index ? { ...product, [field]: typeof value === 'string' ? parseInt(value) || 0 : value } : product
-    ));
-  };
-
-  const updateSupplyItem = (index: number, field: 'quantity', value: string) => {
-    setSupplyItems(prev => prev.map((item, i) => 
-      i === index ? { 
-        ...item, 
-        [field]: parseInt(value) || 0
-      } : item
-    ));
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      // Save cash report
-      const reportData = {
-        id: currentReportId,
-        user_id: user.id,
-        operator_code: selectedOperator,
-        report_date: new Date().toISOString().split('T')[0],
-        moeda_inicial: cashData.moedaInicial,
-        bolao_inicial: cashData.bolaoInicial,
-        suprimento_inicial: cashData.suprimentoInicial,
-        comissao_bolao: cashData.comissaoBolao,
-        venda_produtos: cashData.vendaProdutos,
-        total_caixa_1: cashData.totalCaixa1,
-        total_caixa_2: cashData.totalCaixa2,
-        premios_instantaneos: cashData.premiosInstantaneos,
-        sangria_corpvs_1: cashData.sangriaCorpvs1,
-        sangria_corpvs_2: cashData.sangriaCorpvs2,
-        sangria_corpvs_3: cashData.sangriaCorpvs3,
-        sangria_corpvs_4: cashData.sangriaCorpvs4,
-        sangria_corpvs_5: cashData.sangriaCorpvs5,
-        sangria_cofre_1: cashData.sangriaCofre1,
-        sangria_cofre_2: cashData.sangriaCofre2,
-        sangria_cofre_3: cashData.sangriaCofre3,
-        sangria_cofre_4: cashData.sangriaCofre4,
-        sangria_cofre_5: cashData.sangriaCofre5,
-        pix_malote_1: cashData.pixMalote1,
-        pix_malote_2: cashData.pixMalote2,
-        pix_malote_3: cashData.pixMalote3,
-        pix_malote_4: cashData.pixMalote4,
-        pix_malote_5: cashData.pixMalote5,
-        recebido_caixa_1: cashData.recebidoCaixa1,
-        recebido_caixa_2: cashData.recebidoCaixa2,
-        recebido_caixa_3: cashData.recebidoCaixa3,
-        recebido_caixa_4: cashData.recebidoCaixa4,
-        recebido_caixa_5: cashData.recebidoCaixa5,
-        recebido_caixa_6: cashData.recebidoCaixa6,
-        vale_loteria_1: cashData.valeLoteria1,
-        vale_loteria_2: cashData.valeLoteria2,
-        vale_loteria_3: cashData.valeLoteria3,
-        vale_loteria_4: cashData.valeLoteria4,
-        vale_loteria_5: cashData.valeLoteria5,
-        repassado_valor_1: cashData.repassadoValor1,
-        repassado_valor_2: cashData.repassadoValor2,
-        repassado_valor_3: cashData.repassadoValor3,
-        repassado_valor_4: cashData.repassadoValor4,
-        repassado_valor_5: cashData.repassadoValor5,
-        sangria_final: cashData.sangriaFinal,
-        moeda_final: cashData.moedaFinal,
-        bolao_final: cashData.bolaoFinal,
-        resgates: cashData.resgates,
-        diferenca: cashData.diferenca
-      };
-
-      const savedReport = await saveCashReport(reportData);
-      setCurrentReportId(savedReport.id);
-
-      // Save product reports
-      const productReports = products.map(product => ({
-        product_name: product.name,
-        unit_value: product.unitValue || 0,
-        inicial: product.inicial,
-        recebi: product.recebi,
-        devolvi: product.devolvi,
-        final: product.final
-      }));
-
-      await saveProductReports(savedReport.id, productReports);
-
-      // Save supply reports
-      const supplyReports = supplyItems.map(item => ({
-        denomination: item.denomination,
-        quantity: item.quantity,
-        unit_value: item.value
-      }));
-
-      await saveSupplyReports(savedReport.id, supplyReports);
-
-      alert('Formulário salvo com sucesso!');
-    } catch (error) {
-      console.error('Error saving form:', error);
-      alert('Erro ao salvar formulário. Tente novamente.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b p-6 z-10">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-center text-gray-900 flex-1">
-              Folhinha do Caixa
-            </h1>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X className="w-6 h-6" />
-            </button>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Formulário de Fechamento de Caixa</h2>
+            <p className="text-gray-600">Operador: {user.nome} - Código: {user.cod_operador}</p>
           </div>
-          
-          <div className="text-center space-y-2">
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-              <Calendar className="w-4 h-4" />
-              <span>{formatDateTime(currentTime)}</span>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-              <User className="w-4 h-4" />
-              <span>{user.name} - Código: {selectedOperator}</span>
-            </div>
-          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
 
-          {user.is_admin && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <label className="text-sm font-medium text-gray-700">Operador:</label>
-              <select
-                value={selectedOperator}
-                onChange={(e) => setSelectedOperator(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {allUsers.map(u => (
-                  <option key={u.id} value={u.operator_code}>
-                    {u.operator_code} - {u.name}
-                  </option>
-                ))}
-              </select>
+        {/* Message */}
+        {message && (
+          <div className={`p-4 border-b ${
+            message.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+          }`}>
+            <div className="flex items-center gap-2">
+              {message.type === 'success' ? (
+                <CheckCircle className="w-5 h-5 text-green-600" />
+              ) : (
+                <AlertCircle className="w-5 h-5 text-red-600" />
+              )}
+              <span className={`text-sm font-medium ${
+                message.type === 'success' ? 'text-green-800' : 'text-red-800'
+              }`}>
+                {message.text}
+              </span>
             </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="border-b bg-white">
+          <nav className="flex space-x-8 px-6">
+            <button
+              onClick={() => setActiveTab('cash')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'cash'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4" />
+                Fechamento de Caixa
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'products'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Package className="w-4 h-4" />
+                Controle de Jogos ({products.length})
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('supplies')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'supplies'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Coins className="w-4 h-4" />
+                Suprimento Cofre ({supplies.length})
+              </div>
+            </button>
+          </nav>
+        </div>
+
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-3 text-gray-600">Carregando dados...</span>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'cash' && (
+                <div className="space-y-8">
+                  {/* Valores Iniciais */}
+                  <div className="bg-gray-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Valores Iniciais</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Moeda Inicial
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.moeda_inicial}
+                          onChange={(e) => handleCashDataChange('moeda_inicial', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Bolão Inicial
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.bolao_inicial}
+                          onChange={(e) => handleCashDataChange('bolao_inicial', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Suprimento Inicial
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.suprimento_inicial}
+                          onChange={(e) => handleCashDataChange('suprimento_inicial', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Vendas e Comissões */}
+                  <div className="bg-green-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Vendas e Comissões</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Comissão Bolão
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.comissao_bolao}
+                          onChange={(e) => handleCashDataChange('comissao_bolao', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Venda Produtos
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.venda_produtos}
+                          onChange={(e) => handleCashDataChange('venda_produtos', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Prêmios Instantâneos
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.premios_instantaneos}
+                          onChange={(e) => handleCashDataChange('premios_instantaneos', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Total Caixa */}
+                  <div className="bg-blue-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Total Caixa</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Total Caixa 1
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.total_caixa_1}
+                          onChange={(e) => handleCashDataChange('total_caixa_1', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Total Caixa 2
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.total_caixa_2}
+                          onChange={(e) => handleCashDataChange('total_caixa_2', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sangrias CORPVS */}
+                  <div className="bg-red-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Sangrias CORPVS</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      {[1, 2, 3, 4, 5].map(num => (
+                        <div key={num}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Sangria {num}
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={cashData[`sangria_corpvs_${num}` as keyof CashData]}
+                            onChange={(e) => handleCashDataChange(`sangria_corpvs_${num}` as keyof CashData, parseFloat(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sangrias Cofre */}
+                  <div className="bg-purple-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Sangrias Cofre</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      {[1, 2, 3, 4, 5].map(num => (
+                        <div key={num}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Cofre {num}
+                          </label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={cashData[`sangria_cofre_${num}` as keyof CashData]}
+                            onChange={(e) => handleCashDataChange(`sangria_cofre_${num}` as keyof CashData, parseFloat(e.target.value) || 0)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Valores Finais */}
+                  <div className="bg-yellow-50 rounded-xl p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Valores Finais</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Sangria Final
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.sangria_final}
+                          onChange={(e) => handleCashDataChange('sangria_final', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Moeda Final
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.moeda_final}
+                          onChange={(e) => handleCashDataChange('moeda_final', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Bolão Final
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.bolao_final}
+                          onChange={(e) => handleCashDataChange('bolao_final', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Resgates
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={cashData.resgates}
+                          onChange={(e) => handleCashDataChange('resgates', parseFloat(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Diferença */}
+                  <div className={`rounded-xl p-6 ${
+                    cashData.diferenca >= 0 ? 'bg-green-50' : 'bg-red-50'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <Calculator className="w-6 h-6 text-gray-600" />
+                      <h3 className="text-lg font-semibold text-gray-900">Diferença Calculada</h3>
+                    </div>
+                    <div className="mt-4">
+                      <div className={`text-3xl font-bold ${
+                        cashData.diferenca >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {formatCurrency(cashData.diferenca)}
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {cashData.diferenca >= 0 ? 'Sobra' : 'Falta'} no caixa
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'products' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Controle de Jogos</h3>
+                    <button
+                      onClick={addProduct}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Adicionar Produto
+                    </button>
+                  </div>
+
+                  {products.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">Nenhum produto adicionado</p>
+                      <button
+                        onClick={addProduct}
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                      >
+                        Adicionar Primeiro Produto
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {products.map((product, index) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-medium text-gray-900">Produto {index + 1}</h4>
+                            <button
+                              onClick={() => removeProduct(index)}
+                              className="text-red-600 hover:text-red-700 transition-colors"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="md:col-span-2">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Nome do Produto
+                              </label>
+                              <input
+                                type="text"
+                                value={product.nome_produto}
+                                onChange={(e) => updateProduct(index, 'nome_produto', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Ex: Mega-Sena"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Valor Unitário
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={product.valor_unitario}
+                                onChange={(e) => updateProduct(index, 'valor_unitario', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Quantidade Inicial
+                              </label>
+                              <input
+                                type="number"
+                                value={product.quantidade_inicial}
+                                onChange={(e) => updateProduct(index, 'quantidade_inicial', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Quantidade Recebida
+                              </label>
+                              <input
+                                type="number"
+                                value={product.quantidade_recebida}
+                                onChange={(e) => updateProduct(index, 'quantidade_recebida', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Quantidade Devolvida
+                              </label>
+                              <input
+                                type="number"
+                                value={product.quantidade_devolvida}
+                                onChange={(e) => updateProduct(index, 'quantidade_devolvida', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Quantidade Final
+                              </label>
+                              <input
+                                type="number"
+                                value={product.quantidade_final}
+                                onChange={(e) => updateProduct(index, 'quantidade_final', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Valor Vendido
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={product.valor_vendido}
+                                onChange={(e) => updateProduct(index, 'valor_vendido', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Vendidos (Calculado)
+                              </label>
+                              <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
+                                {product.quantidade_inicial + product.quantidade_recebida - product.quantidade_devolvida - product.quantidade_final}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'supplies' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900">Suprimento do Cofre</h3>
+                    <button
+                      onClick={addSupply}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Adicionar Denominação
+                    </button>
+                  </div>
+
+                  {supplies.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Coins className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">Nenhuma denominação adicionada</p>
+                      <button
+                        onClick={addSupply}
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                      >
+                        Adicionar Primeira Denominação
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {supplies.map((supply, index) => (
+                        <div key={index} className="bg-gray-50 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-medium text-gray-900">Denominação {index + 1}</h4>
+                            <button
+                              onClick={() => removeSupply(index)}
+                              className="text-red-600 hover:text-red-700 transition-colors"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Denominação
+                              </label>
+                              <input
+                                type="text"
+                                value={supply.denominacao}
+                                onChange={(e) => updateSupply(index, 'denominacao', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Ex: R$ 50,00"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Valor Unitário
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                value={supply.valor_unitario}
+                                onChange={(e) => updateSupply(index, 'valor_unitario', parseFloat(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Quantidade
+                              </label>
+                              <input
+                                type="number"
+                                value={supply.quantidade}
+                                onChange={(e) => updateSupply(index, 'quantidade', parseInt(e.target.value) || 0)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Valor Total
+                              </label>
+                              <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
+                                {formatCurrency(supply.valor_total)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        <div className="p-6">
-          {/* Expandable Sections */}
-          <div className="space-y-4">
-            {/* Folhinha do Caixa */}
-            <div className="border border-gray-200 rounded-lg">
-              <button
-                onClick={() => toggleSection('cash')}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <h2 className="text-lg font-semibold text-gray-900">Folhinha do Caixa</h2>
-                {expandedSections.cash ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </button>
-              
-              {expandedSections.cash && (
-                <div className="p-4 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Inicial</label>
-                      <input
-                        type="text"
-                        value={formatCurrencyInput(cashData.moedaInicial)}
-                        onChange={(e) => updateCashData('moedaInicial', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0,00"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Inicial</label>
-                      <input
-                        type="text"
-                        value={formatCurrencyInput(cashData.bolaoInicial)}
-                        onChange={(e) => updateCashData('bolaoInicial', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0,00"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Suprimento Inicial</label>
-                      <input
-                        type="text"
-                        value={formatCurrencyInput(cashData.suprimentoInicial)}
-                        onChange={(e) => updateCashData('suprimentoInicial', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0,00"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Comissão Bolão</label>
-                      <input
-                        type="text"
-                        value={formatCurrencyInput(cashData.comissaoBolao)}
-                        onChange={(e) => updateCashData('comissaoBolao', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0,00"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Venda Produtos</label>
-                      <input
-                        type="text"
-                        value={formatCurrencyInput(cashData.vendaProdutos)}
-                        onChange={(e) => updateCashData('vendaProdutos', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0,00"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 1</label>
-                      <input
-                        type="text"
-                        value={formatCurrencyInput(cashData.totalCaixa1)}
-                        onChange={(e) => updateCashData('totalCaixa1', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0,00"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 2</label>
-                      <input
-                        type="text"
-                        value={formatCurrencyInput(cashData.totalCaixa2)}
-                        onChange={(e) => updateCashData('totalCaixa2', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0,00"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Prêmios Instantâneos</label>
-                      <input
-                        type="text"
-                        value={formatCurrencyInput(cashData.premiosInstantaneos)}
-                        onChange={(e) => updateCashData('premiosInstantaneos', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="0,00"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Sangria fields */}
-                  <div className="space-y-4">
-                    <h3 className="text-md font-semibold text-gray-800 border-b pb-2">Sangrias</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 1</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCorpvs1)}
-                          onChange={(e) => updateCashData('sangriaCorpvs1', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 2</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCorpvs2)}
-                          onChange={(e) => updateCashData('sangriaCorpvs2', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 3</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCorpvs3)}
-                          onChange={(e) => updateCashData('sangriaCorpvs3', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 4</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCorpvs4)}
-                          onChange={(e) => updateCashData('sangriaCorpvs4', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Corpvs 5</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCorpvs5)}
-                          onChange={(e) => updateCashData('sangriaCorpvs5', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 1</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCofre1)}
-                          onChange={(e) => updateCashData('sangriaCofre1', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 2</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCofre2)}
-                          onChange={(e) => updateCashData('sangriaCofre2', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 3</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCofre3)}
-                          onChange={(e) => updateCashData('sangriaCofre3', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 4</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCofre4)}
-                          onChange={(e) => updateCashData('sangriaCofre4', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Cofre 5</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaCofre5)}
-                          onChange={(e) => updateCashData('sangriaCofre5', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 1</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.pixMalote1)}
-                          onChange={(e) => updateCashData('pixMalote1', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 2</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.pixMalote2)}
-                          onChange={(e) => updateCashData('pixMalote2', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 3</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.pixMalote3)}
-                          onChange={(e) => updateCashData('pixMalote3', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 4</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.pixMalote4)}
-                          onChange={(e) => updateCashData('pixMalote4', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Pix Malote 5</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.pixMalote5)}
-                          onChange={(e) => updateCashData('pixMalote5', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 1</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.recebidoCaixa1)}
-                          onChange={(e) => updateCashData('recebidoCaixa1', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 2</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.recebidoCaixa2)}
-                          onChange={(e) => updateCashData('recebidoCaixa2', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 3</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.recebidoCaixa3)}
-                          onChange={(e) => updateCashData('recebidoCaixa3', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 4</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.recebidoCaixa4)}
-                          onChange={(e) => updateCashData('recebidoCaixa4', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 5</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.recebidoCaixa5)}
-                          onChange={(e) => updateCashData('recebidoCaixa5', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Recebido do Caixa 6</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.recebidoCaixa6)}
-                          onChange={(e) => updateCashData('recebidoCaixa6', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 1</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.valeLoteria1)}
-                          onChange={(e) => updateCashData('valeLoteria1', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 2</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.valeLoteria2)}
-                          onChange={(e) => updateCashData('valeLoteria2', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 3</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.valeLoteria3)}
-                          onChange={(e) => updateCashData('valeLoteria3', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 4</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.valeLoteria4)}
-                          onChange={(e) => updateCashData('valeLoteria4', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Vale Loteria 5</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.valeLoteria5)}
-                          onChange={(e) => updateCashData('valeLoteria5', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 1</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.repassadoValor1)}
-                          onChange={(e) => updateCashData('repassadoValor1', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 2</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.repassadoValor2)}
-                          onChange={(e) => updateCashData('repassadoValor2', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 3</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.repassadoValor3)}
-                          onChange={(e) => updateCashData('repassadoValor3', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 4</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.repassadoValor4)}
-                          onChange={(e) => updateCashData('repassadoValor4', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Repassado Valor 5</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.repassadoValor5)}
-                          onChange={(e) => updateCashData('repassadoValor5', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Final</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.sangriaFinal)}
-                          onChange={(e) => updateCashData('sangriaFinal', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Final</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.moedaFinal)}
-                          onChange={(e) => updateCashData('moedaFinal', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Final</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.bolaoFinal)}
-                          onChange={(e) => updateCashData('bolaoFinal', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Resgates</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.resgates)}
-                          onChange={(e) => updateCashData('resgates', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Diferença</label>
-                        <input
-                          type="text"
-                          value={formatCurrencyInput(cashData.diferenca)}
-                          onChange={(e) => updateCashData('diferenca', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Controle de Produtos */}
-            <div className="border border-gray-200 rounded-lg">
-              <button
-                onClick={() => toggleSection('products')}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <h2 className="text-lg font-semibold text-gray-900">Controle de Produtos</h2>
-                {expandedSections.products ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </button>
-              
-              {expandedSections.products && (
-                <div className="p-4">
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse border border-gray-300">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="border border-gray-300 px-2 py-2 text-left text-sm font-medium">Produto</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Inicial</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Recebi</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Devolvi</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Final</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Valor Vendido</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {products.map((product, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="border border-gray-300 px-2 py-2 text-sm font-medium">
-                              {product.name}
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2">
-                              <input
-                                type="number"
-                                value={product.inicial || ''}
-                                onChange={(e) => updateProduct(index, 'inicial', e.target.value)}
-                                className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
-                                placeholder="0"
-                              />
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2">
-                              <input
-                                type="number"
-                                value={product.recebi || ''}
-                                onChange={(e) => updateProduct(index, 'recebi', e.target.value)}
-                                className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
-                                placeholder="0"
-                              />
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2">
-                              <input
-                                type="number"
-                                value={product.devolvi || ''}
-                                onChange={(e) => updateProduct(index, 'devolvi', e.target.value)}
-                                className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
-                                placeholder="0"
-                              />
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2">
-                              <input
-                                type="number"
-                                value={product.final || ''}
-                                onChange={(e) => updateProduct(index, 'final', e.target.value)}
-                                className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
-                                placeholder="0"
-                              />
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2 text-center text-sm font-semibold">
-                              {formatCurrency(calculateProductValue(product))}
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="bg-blue-50 font-bold">
-                          <td colSpan={5} className="border border-gray-300 px-2 py-2 text-right text-sm font-bold">
-                            Valor Total:
-                          </td>
-                          <td className="border border-gray-300 px-2 py-2 text-center text-sm font-bold">
-                            {formatCurrency(calculateTotalProducts())}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Suprimento Cofre */}
-            <div className="border border-gray-200 rounded-lg">
-              <button
-                onClick={() => toggleSection('supply')}
-                className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <h2 className="text-lg font-semibold text-gray-900">Suprimento Cofre</h2>
-                {expandedSections.supply ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-              </button>
-              
-              {expandedSections.supply && (
-                <div className="p-4">
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse border border-gray-300">
-                      <thead>
-                        <tr className="bg-gray-100">
-                          <th className="border border-gray-300 px-2 py-2 text-left text-sm font-medium">Denominação</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Quantidade</th>
-                          <th className="border border-gray-300 px-2 py-2 text-center text-sm font-medium">Valor Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {supplyItems.map((item, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="border border-gray-300 px-2 py-2 text-sm font-medium">
-                              {item.denomination}
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2">
-                              <input
-                                type="number"
-                                value={item.quantity || ''}
-                                onChange={(e) => updateSupplyItem(index, 'quantity', e.target.value)}
-                                className="w-full px-2 py-1 text-center border-0 focus:ring-1 focus:ring-blue-500 text-sm"
-                                min="0"
-                                placeholder="0"
-                              />
-                            </td>
-                            <td className="border border-gray-300 px-2 py-2 text-center text-sm font-semibold">
-                              {formatCurrency(item.quantity * item.value)}
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="bg-blue-50 font-bold">
-                          <td colSpan={2} className="border border-gray-300 px-2 py-2 text-right text-sm font-bold">
-                            Valor Total:
-                          </td>
-                          <td className="border border-gray-300 px-2 py-2 text-center text-sm font-bold">
-                            {formatCurrency(calculateSupplyTotal())}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="mt-6 flex justify-end">
-            <button 
+        <div className="border-t bg-gray-50 px-6 py-4">
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              disabled={saving}
+              className="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 px-6 py-2 rounded-lg transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
               onClick={handleSave}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+              disabled={saving}
+              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors"
             >
               <Save className="w-4 h-4" />
-              {loading ? 'Salvando...' : 'Salvar Formulário'}
+              {saving ? 'Salvando...' : 'Salvar Relatório'}
             </button>
           </div>
         </div>
