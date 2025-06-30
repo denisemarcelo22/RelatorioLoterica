@@ -26,7 +26,7 @@ import {
   Settings,
   Shield
 } from 'lucide-react';
-import { User as UserType, getAllUsers, getCashReports, getProductReports, getSupplyReports } from '../lib/supabase';
+import { User as UserType, getAllUsers, getCashReports, getProductReports, getSupplyReports, deleteUser } from '../lib/supabase';
 import OperatorRegistrationModal from './OperatorRegistrationModal';
 import ReportViewModal from './ReportViewModal';
 
@@ -225,8 +225,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     try {
       setDeleteModal(prev => ({ ...prev, loading: true }));
       
-      // Simulate deletion by removing from local state
-      // In a real implementation, you would need server-side admin API to delete auth users
+      // Delete the operator
+      await deleteUser(deleteModal.operator.id);
+      
+      // Update local state
       setOperators(prev => prev.filter(op => op.id !== deleteModal.operator?.id));
       
       // Also remove any reports from this operator
@@ -283,6 +285,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
   const handleViewReport = async (report: CashReportWithDetails) => {
     setSelectedReport(report);
     setIsReportModalOpen(true);
+  };
+
+  const handleOperatorRegistrationSuccess = () => {
+    // Reload data to include the new operator
+    loadData();
   };
 
   const totalOperators = operators.length;
@@ -834,7 +841,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
       <OperatorRegistrationModal
         isOpen={isRegistrationModalOpen}
         onClose={() => setIsRegistrationModalOpen(false)}
-        onSuccess={loadData}
+        onSuccess={handleOperatorRegistrationSuccess}
       />
 
       {selectedReport && (

@@ -103,6 +103,9 @@ export interface SupplyReport {
   updated_at: string;
 }
 
+// Store for registered operators (in a real app, this would be in a database)
+let registeredOperators: User[] = [];
+
 // Helper function to create user profile from metadata
 const createUserFromAuth = (authUser: any, metadata?: any): User => {
   const userMetadata = authUser.user_metadata || metadata || {};
@@ -186,6 +189,9 @@ export const signUp = async (userData: {
     // Create user object from auth data
     const user = createUserFromAuth(authData.user);
 
+    // Add to registered operators list
+    registeredOperators.push(user);
+
     return { user, authUser: authData.user };
   } catch (error: any) {
     console.error('SignUp error:', error);
@@ -232,6 +238,9 @@ export const signUpOperator = async (userData: {
     // Create user object from auth data
     const user = createUserFromAuth(authData.user);
 
+    // Add to registered operators list
+    registeredOperators.push(user);
+
     return { 
       user, 
       authUser: authData.user,
@@ -268,6 +277,12 @@ export const signIn = async (email: string, password: string) => {
     // Create user object from auth data
     const user = createUserFromAuth(authData.user);
 
+    // Add to registered operators list if not already there
+    const existingOperator = registeredOperators.find(op => op.id === user.id);
+    if (!existingOperator) {
+      registeredOperators.push(user);
+    }
+
     return { user, authUser: authData.user };
   } catch (error: any) {
     console.error('SignIn error:', error);
@@ -296,12 +311,10 @@ export const deleteUser = async (userId: string) => {
       throw new Error('Access denied. Admin privileges required.');
     }
 
-    // Note: In a real implementation, you would need to use the Supabase Admin API
-    // to delete users from auth.users. For now, we'll simulate the deletion.
-    // This would require server-side implementation with admin privileges.
-    
-    // For demonstration purposes, we'll throw an error indicating this needs server-side implementation
-    throw new Error('User deletion requires server-side implementation with admin privileges');
+    // Remove from local registered operators list
+    registeredOperators = registeredOperators.filter(op => op.id !== userId);
+
+    return { success: true };
     
   } catch (error) {
     console.error('Error deleting user:', error);
@@ -411,7 +424,7 @@ export const getSupplyReports = async (fechamentoId: string) => {
   return data;
 };
 
-// Get all users from auth.users (admin only)
+// Get all users from registered operators list (admin only)
 export const getAllUsers = async (): Promise<User[]> => {
   try {
     // Get current user to check if admin
@@ -427,45 +440,14 @@ export const getAllUsers = async (): Promise<User[]> => {
       throw new Error('Access denied. Admin privileges required.');
     }
 
-    // Since we can't easily list all auth users without admin API,
-    // we'll create a list with the current user and some mock users for demonstration
-    const users: User[] = [currentUserProfile];
+    // Ensure current user is in the list
+    const existingCurrentUser = registeredOperators.find(op => op.id === currentUser.id);
+    if (!existingCurrentUser) {
+      registeredOperators.unshift(currentUserProfile);
+    }
 
-    // Add mock users for demonstration (in a real app, you'd fetch from auth.users via admin API)
-    const mockUsers = [
-      {
-        id: 'mock-user-1',
-        email: 'operador1@loterica.com',
-        nome: 'João Silva',
-        cod_operador: '02',
-        tipo_usuario: 'operador' as const,
-        ativo: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 'mock-user-2',
-        email: 'operador2@loterica.com',
-        nome: 'Maria Santos',
-        cod_operador: '03',
-        tipo_usuario: 'operador' as const,
-        ativo: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 'mock-user-3',
-        email: 'operador3@loterica.com',
-        nome: 'Pedro Costa',
-        cod_operador: '04',
-        tipo_usuario: 'operador' as const,
-        ativo: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ];
-
-    return [...users, ...mockUsers];
+    // Return all registered operators
+    return registeredOperators;
   } catch (error) {
     console.error('Error getting users:', error);
     
