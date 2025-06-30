@@ -260,40 +260,48 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
     }).format(value);
   };
 
-  // Função para converter entrada de texto em número
-  const parseMoneyInput = (value: string): number => {
-    if (!value || value.trim() === '') return 0;
+  // Função para aplicar máscara de moeda durante a digitação
+  const applyCurrencyMask = (value: string): string => {
+    if (!value) return '';
     
-    // Remove tudo exceto números, vírgula e ponto
-    let cleanValue = value.replace(/[^\d,.-]/g, '');
+    // Remove tudo exceto números
+    const numbers = value.replace(/\D/g, '');
     
-    // Se não tem números, retorna 0
-    if (!/\d/.test(cleanValue)) return 0;
+    if (!numbers) return '';
     
-    // Se tem vírgula, trata como separador decimal brasileiro
-    if (cleanValue.includes(',')) {
-      // Substitui vírgula por ponto para parseFloat
-      cleanValue = cleanValue.replace(',', '.');
-    }
+    // Converte para centavos
+    const cents = parseInt(numbers);
     
-    // Se tem múltiplos pontos, mantém apenas o último como decimal
-    const parts = cleanValue.split('.');
-    if (parts.length > 2) {
-      cleanValue = parts.slice(0, -1).join('') + '.' + parts[parts.length - 1];
-    }
+    // Converte de volta para reais
+    const reais = cents / 100;
     
+    // Formata como moeda brasileira sem o símbolo R$
+    return new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(reais);
+  };
+
+  // Função para converter valor mascarado para número
+  const parseMaskedValue = (value: string): number => {
+    if (!value) return 0;
+    
+    // Remove pontos de milhares e substitui vírgula por ponto
+    const cleanValue = value.replace(/\./g, '').replace(',', '.');
     const parsed = parseFloat(cleanValue);
+    
     return isNaN(parsed) ? 0 : parsed;
   };
 
-  // Função para formatar valor de entrada (sem máscara automática)
+  // Função para formatar valor de entrada com máscara
   const formatInputValue = (value: number): string => {
     if (value === 0) return '';
-    return value.toString().replace('.', ',');
+    return applyCurrencyMask((value * 100).toString());
   };
 
   const handleCashDataChange = (field: keyof CashData, value: string) => {
-    const numericValue = parseMoneyInput(value);
+    const maskedValue = applyCurrencyMask(value);
+    const numericValue = parseMaskedValue(maskedValue);
     setCashData(prev => ({ ...prev, [field]: numericValue }));
   };
 
@@ -540,43 +548,55 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Inicial</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.moeda_inicial)}
-                          onChange={(e) => handleCashDataChange('moeda_inicial', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.moeda_inicial)}
+                            onChange={(e) => handleCashDataChange('moeda_inicial', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Inicial</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.bolao_inicial)}
-                          onChange={(e) => handleCashDataChange('bolao_inicial', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.bolao_inicial)}
+                            onChange={(e) => handleCashDataChange('bolao_inicial', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Suprimento Inicial</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.suprimento_inicial)}
-                          onChange={(e) => handleCashDataChange('suprimento_inicial', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.suprimento_inicial)}
+                            onChange={(e) => handleCashDataChange('suprimento_inicial', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Comissão Bolão</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.comissao_bolao)}
-                          onChange={(e) => handleCashDataChange('comissao_bolao', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.comissao_bolao)}
+                            onChange={(e) => handleCashDataChange('comissao_bolao', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -587,43 +607,55 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Venda Produtos</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.venda_produtos)}
-                          onChange={(e) => handleCashDataChange('venda_produtos', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.venda_produtos)}
+                            onChange={(e) => handleCashDataChange('venda_produtos', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 1</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.total_caixa_1)}
-                          onChange={(e) => handleCashDataChange('total_caixa_1', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.total_caixa_1)}
+                            onChange={(e) => handleCashDataChange('total_caixa_1', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Total em Caixa 2</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.total_caixa_2)}
-                          onChange={(e) => handleCashDataChange('total_caixa_2', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.total_caixa_2)}
+                            onChange={(e) => handleCashDataChange('total_caixa_2', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Prêmios Instantâneos</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.premios_instantaneos)}
-                          onChange={(e) => handleCashDataChange('premios_instantaneos', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.premios_instantaneos)}
+                            onChange={(e) => handleCashDataChange('premios_instantaneos', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -637,13 +669,16 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Sangria Corpvs {num}
                           </label>
-                          <input
-                            type="text"
-                            value={formatInputValue(cashData[`sangria_corpvs_${num}` as keyof CashData] as number)}
-                            onChange={(e) => handleCashDataChange(`sangria_corpvs_${num}` as keyof CashData, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="0,00"
-                          />
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                            <input
+                              type="text"
+                              value={formatInputValue(cashData[`sangria_corpvs_${num}` as keyof CashData] as number)}
+                              onChange={(e) => handleCashDataChange(`sangria_corpvs_${num}` as keyof CashData, e.target.value)}
+                              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="0,00"
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -658,13 +693,16 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Sangria Cofre {num}
                           </label>
-                          <input
-                            type="text"
-                            value={formatInputValue(cashData[`sangria_cofre_${num}` as keyof CashData] as number)}
-                            onChange={(e) => handleCashDataChange(`sangria_cofre_${num}` as keyof CashData, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="0,00"
-                          />
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                            <input
+                              type="text"
+                              value={formatInputValue(cashData[`sangria_cofre_${num}` as keyof CashData] as number)}
+                              onChange={(e) => handleCashDataChange(`sangria_cofre_${num}` as keyof CashData, e.target.value)}
+                              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="0,00"
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -679,13 +717,16 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             PIX Malote {num}
                           </label>
-                          <input
-                            type="text"
-                            value={formatInputValue(cashData[`pix_malote_${num}` as keyof CashData] as number)}
-                            onChange={(e) => handleCashDataChange(`pix_malote_${num}` as keyof CashData, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="0,00"
-                          />
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                            <input
+                              type="text"
+                              value={formatInputValue(cashData[`pix_malote_${num}` as keyof CashData] as number)}
+                              onChange={(e) => handleCashDataChange(`pix_malote_${num}` as keyof CashData, e.target.value)}
+                              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="0,00"
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -700,13 +741,16 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Recebido do Caixa {num}
                           </label>
-                          <input
-                            type="text"
-                            value={formatInputValue(cashData[`recebido_caixa_${num}` as keyof CashData] as number)}
-                            onChange={(e) => handleCashDataChange(`recebido_caixa_${num}` as keyof CashData, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="0,00"
-                          />
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                            <input
+                              type="text"
+                              value={formatInputValue(cashData[`recebido_caixa_${num}` as keyof CashData] as number)}
+                              onChange={(e) => handleCashDataChange(`recebido_caixa_${num}` as keyof CashData, e.target.value)}
+                              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="0,00"
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -721,13 +765,16 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Vale Loteria {num}
                           </label>
-                          <input
-                            type="text"
-                            value={formatInputValue(cashData[`vale_loteria_${num}` as keyof CashData] as number)}
-                            onChange={(e) => handleCashDataChange(`vale_loteria_${num}` as keyof CashData, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="0,00"
-                          />
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                            <input
+                              type="text"
+                              value={formatInputValue(cashData[`vale_loteria_${num}` as keyof CashData] as number)}
+                              onChange={(e) => handleCashDataChange(`vale_loteria_${num}` as keyof CashData, e.target.value)}
+                              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="0,00"
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -742,13 +789,16 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Repassado Valor {num}
                           </label>
-                          <input
-                            type="text"
-                            value={formatInputValue(cashData[`repassado_caixa_${num}` as keyof CashData] as number)}
-                            onChange={(e) => handleCashDataChange(`repassado_caixa_${num}` as keyof CashData, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="0,00"
-                          />
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                            <input
+                              type="text"
+                              value={formatInputValue(cashData[`repassado_caixa_${num}` as keyof CashData] as number)}
+                              onChange={(e) => handleCashDataChange(`repassado_caixa_${num}` as keyof CashData, e.target.value)}
+                              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="0,00"
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -760,43 +810,55 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Sangria Final</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.sangria_final)}
-                          onChange={(e) => handleCashDataChange('sangria_final', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.sangria_final)}
+                            onChange={(e) => handleCashDataChange('sangria_final', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Moeda Final</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.moeda_final)}
-                          onChange={(e) => handleCashDataChange('moeda_final', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.moeda_final)}
+                            onChange={(e) => handleCashDataChange('moeda_final', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Bolão Final</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.bolao_final)}
-                          onChange={(e) => handleCashDataChange('bolao_final', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.bolao_final)}
+                            onChange={(e) => handleCashDataChange('bolao_final', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Resgates</label>
-                        <input
-                          type="text"
-                          value={formatInputValue(cashData.resgates)}
-                          onChange={(e) => handleCashDataChange('resgates', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          placeholder="0,00"
-                        />
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">R$</span>
+                          <input
+                            type="text"
+                            value={formatInputValue(cashData.resgates)}
+                            onChange={(e) => handleCashDataChange('resgates', e.target.value)}
+                            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="0,00"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
