@@ -77,20 +77,41 @@ interface CashData {
 }
 
 interface ProductData {
-  nome_produto: string;
-  valor_unitario: number;
-  quantidade_inicial: number;
-  quantidade_recebida: number;
-  quantidade_devolvida: number;
-  quantidade_final: number;
-  valor_vendido: number;
+  telesena_verde: number;
+  rodada_da_sorte: number;
+  federal_10: number;
+  telesena_lilas: number;
+  trio: number;
+  trevo_sorte: number;
+  federal: number;
+  telesena: number;
+  caca_tesouro: number;
+  so_ouro: number;
+  telesena_rosa: number;
+  telesena_amarela: number;
+  telesena_vermelha: number;
+  qtd_inicial: number;
+  qtd_recebida: number;
+  qtd_devolvida: number;
+  qtd_final: number;
+  vlr_vendido: number;
 }
 
 interface SupplyData {
-  denominacao: string;
-  valor_unitario: number;
-  quantidade: number;
-  valor_total: number;
+  "R$200": number;
+  "R$100": number;
+  "R$50": number;
+  "R$20": number;
+  "R$10": number;
+  "R$5": number;
+  "R$2": number;
+  "R$1": number;
+  "R$0,50": number;
+  "R$0,25": number;
+  "R$0,10": number;
+  "R$0,05": number;
+  qtd: number;
+  vlr_total: number;
 }
 
 const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
@@ -148,37 +169,44 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   });
 
   // Produtos predefinidos
-  const [products, setProducts] = useState<ProductData[]>([
-    { nome_produto: 'TELE SENA', valor_unitario: 15.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'TELE SENA AMARELA', valor_unitario: 10.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'TELE SENA ROSA', valor_unitario: 5.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'TELE SENA VERDE', valor_unitario: 5.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'TELE SENA LILÁS', valor_unitario: 5.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'TELE SENA VERMELHA', valor_unitario: 10.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'FEDERAL', valor_unitario: 4.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'FEDERAL R$10', valor_unitario: 10.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'TREVO DA SORTE', valor_unitario: 2.50, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'SÓ O OURO', valor_unitario: 2.50, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'RODA DA SORTE', valor_unitario: 5.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'CAÇA AO TESOURO', valor_unitario: 10.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 },
-    { nome_produto: 'VIP', valor_unitario: 20.00, quantidade_inicial: 0, quantidade_recebida: 0, quantidade_devolvida: 0, quantidade_final: 0, valor_vendido: 0 }
-  ]);
+  const [products, setProducts] = useState<ProductData>({
+    telesena_verde: 0,
+    rodada_da_sorte: 0,
+    federal_10: 0,
+    telesena_lilas: 0,
+    trio: 0,
+    trevo_sorte: 0,
+    federal: 0,
+    telesena: 0,
+    caca_tesouro: 0,
+    so_ouro: 0,
+    telesena_rosa: 0,
+    telesena_amarela: 0,
+    telesena_vermelha: 0,
+    qtd_inicial: 0,
+    qtd_recebida: 0,
+    qtd_devolvida: 0,
+    qtd_final: 0,
+    vlr_vendido: 0
+  });
 
   // Suprimentos predefinidos
-  const [supplies, setSupplies] = useState<SupplyData[]>([
-    { denominacao: 'R$ 200,00', valor_unitario: 200.00, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 100,00', valor_unitario: 100.00, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 50,00', valor_unitario: 50.00, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 20,00', valor_unitario: 20.00, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 10,00', valor_unitario: 10.00, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 5,00', valor_unitario: 5.00, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 2,00', valor_unitario: 2.00, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 1,00', valor_unitario: 1.00, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 0,50', valor_unitario: 0.50, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 0,25', valor_unitario: 0.25, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 0,10', valor_unitario: 0.10, quantidade: 0, valor_total: 0 },
-    { denominacao: 'R$ 0,05', valor_unitario: 0.05, quantidade: 0, valor_total: 0 }
-  ]);
+  const [supplies, setSupplies] = useState<SupplyData>({
+    "R$200": 0,
+    "R$100": 0,
+    "R$50": 0,
+    "R$20": 0,
+    "R$10": 0,
+    "R$5": 0,
+    "R$2": 0,
+    "R$1": 0,
+    "R$0,50": 0,
+    "R$0,25": 0,
+    "R$0,10": 0,
+    "R$0,05": 0,
+    qtd: 0,
+    vlr_total: 0
+  });
 
   // Atualizar horário a cada segundo
   useEffect(() => {
@@ -193,15 +221,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
       loadExistingData();
     }
   }, [isOpen, user.id]);
-
-  // Recalcular valor vendido dos produtos
-  useEffect(() => {
-    setProducts(prev => prev.map(product => {
-      const vendidos = product.quantidade_inicial + product.quantidade_recebida - product.quantidade_devolvida - product.quantidade_final;
-      const valorVendido = vendidos * product.valor_unitario;
-      return { ...product, valor_vendido: valorVendido };
-    }));
-  }, []);
 
   const loadExistingData = async () => {
     try {
@@ -220,10 +239,10 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
         ]);
         
         if (productsData.length > 0) {
-          setProducts(productsData);
+          setProducts(productsData[0]);
         }
         if (suppliesData.length > 0) {
-          setSupplies(suppliesData);
+          setSupplies(suppliesData[0]);
         }
       }
     } catch (error) {
@@ -242,33 +261,27 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   };
 
   // Função para aplicar máscara de moeda durante a digitação
-  const applyCurrencyMask = (value: string): string => {
-    if (!value) return '';
+  const formatNumberInput = (value: string): string => {
+    // Remove tudo exceto números, vírgulas e pontos
+    let cleanValue = value.replace(/[^\d.,]/g, '');
     
-    // Remove tudo exceto números
-    const numbers = value.replace(/\D/g, '');
+    // Se tem vírgula, substitui por ponto para processamento
+    if (cleanValue.includes(',')) {
+      const parts = cleanValue.split(',');
+      if (parts.length === 2) {
+        cleanValue = parts[0] + '.' + parts[1].substring(0, 2);
+      }
+    }
     
-    if (!numbers) return '';
-    
-    // Converte para centavos
-    const cents = parseInt(numbers);
-    
-    // Converte de volta para reais
-    const reais = cents / 100;
-    
-    // Formata como moeda brasileira sem o símbolo R$
-    return new Intl.NumberFormat('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(reais);
+    return cleanValue;
   };
 
   // Função para converter valor mascarado para número
-  const parseMaskedValue = (value: string): number => {
+  const parseNumberValue = (value: string): number => {
     if (!value) return 0;
     
-    // Remove pontos de milhares e substitui vírgula por ponto
-    const cleanValue = value.replace(/\./g, '').replace(',', '.');
+    // Substitui vírgula por ponto se necessário
+    const cleanValue = value.replace(',', '.');
     const parsed = parseFloat(cleanValue);
     
     return isNaN(parsed) ? 0 : parsed;
@@ -277,48 +290,49 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   // Função para formatar valor de entrada com máscara
   const formatInputValue = (value: number): string => {
     if (value === 0) return '';
-    return applyCurrencyMask((value * 100).toString());
+    return value.toString().replace('.', ',');
   };
 
   const handleCashDataChange = (field: keyof CashData, value: string) => {
-    const maskedValue = applyCurrencyMask(value);
-    const numericValue = parseMaskedValue(maskedValue);
+    const formattedValue = formatNumberInput(value);
+    const numericValue = parseNumberValue(formattedValue);
     setCashData(prev => ({ ...prev, [field]: numericValue }));
   };
 
-  const updateProduct = (index: number, field: keyof ProductData, value: string | number) => {
-    setProducts(prev => prev.map((product, i) => {
-      if (i === index) {
-        const updatedProduct = { ...product, [field]: value };
-        
-        // Recalcular valor vendido se mudou quantidade ou valor unitário
-        if (field === 'quantidade_inicial' || field === 'quantidade_recebida' || 
-            field === 'quantidade_devolvida' || field === 'quantidade_final' || field === 'valor_unitario') {
-          const vendidos = updatedProduct.quantidade_inicial + updatedProduct.quantidade_recebida - 
-                          updatedProduct.quantidade_devolvida - updatedProduct.quantidade_final;
-          updatedProduct.valor_vendido = vendidos * updatedProduct.valor_unitario;
-        }
-        
-        return updatedProduct;
-      }
-      return product;
-    }));
+  const updateProduct = (field: keyof ProductData, value: string | number) => {
+    setProducts(prev => {
+      const updated = { ...prev, [field]: typeof value === 'string' ? parseInt(value) || 0 : value };
+      
+      // Recalcular valor vendido automaticamente
+      const vendidos = updated.qtd_inicial + updated.qtd_recebida - updated.qtd_devolvida - updated.qtd_final;
+      updated.vlr_vendido = Math.max(0, vendidos) * 5; // Valor médio por produto
+      
+      return updated;
+    });
   };
 
-  const updateSupply = (index: number, field: keyof SupplyData, value: string | number) => {
-    setSupplies(prev => prev.map((supply, i) => {
-      if (i === index) {
-        const updatedSupply = { ...supply, [field]: value };
+  const updateSupply = (field: keyof SupplyData, value: string | number) => {
+    setSupplies(prev => {
+      const updated = { ...prev, [field]: typeof value === 'string' ? parseInt(value) || 0 : value };
+      
+      // Recalcular totais
+      if (field !== 'qtd' && field !== 'vlr_total') {
+        const denominationValues = {
+          "R$200": 200, "R$100": 100, "R$50": 50, "R$20": 20, "R$10": 10,
+          "R$5": 5, "R$2": 2, "R$1": 1, "R$0,50": 0.5, "R$0,25": 0.25, "R$0,10": 0.1, "R$0,05": 0.05
+        };
         
-        // Recalcular valor total
-        if (field === 'quantidade' || field === 'valor_unitario') {
-          updatedSupply.valor_total = updatedSupply.quantidade * updatedSupply.valor_unitario;
-        }
+        updated.qtd = Object.keys(denominationValues).reduce((sum, key) => {
+          return sum + (updated[key as keyof SupplyData] as number);
+        }, 0);
         
-        return updatedSupply;
+        updated.vlr_total = Object.entries(denominationValues).reduce((sum, [key, value]) => {
+          return sum + ((updated[key as keyof SupplyData] as number) * value);
+        }, 0);
       }
-      return supply;
-    }));
+      
+      return updated;
+    });
   };
 
   const handleSave = async () => {
@@ -339,34 +353,24 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
       const savedReport = await saveCashReport(reportData);
 
       // Salvar produtos se houver
-      if (products.length > 0) {
-        const productsToSave = products
-          .filter(p => p.nome_produto.trim())
-          .map(product => ({
-            user_id: user.id,
-            cod_operador: user.cod_operador,
-            ...product
-          }));
-        
-        if (productsToSave.length > 0) {
-          await saveProductReports(savedReport.id, productsToSave);
-        }
+      const productsToSave = {
+        user_id: user.id,
+        cod_operador: user.cod_operador,
+        ...products
+      };
+      
+      await saveProductReports(savedReport.id, [productsToSave]);
+
+      // Salvar suprimentos
+      const suppliesToSave = {
+        user_id: user.id,
+        cod_operador: user.cod_operador,
+        ...supplies
+      };
+      
+      await saveSupplyReports(savedReport.id, [suppliesToSave]);
       }
 
-      // Salvar suprimentos se houver
-      if (supplies.length > 0) {
-        const suppliesToSave = supplies
-          .filter(s => s.denominacao.trim())
-          .map(supply => ({
-            user_id: user.id,
-            cod_operador: user.cod_operador,
-            ...supply
-          }));
-        
-        if (suppliesToSave.length > 0) {
-          await saveSupplyReports(savedReport.id, suppliesToSave);
-        }
-      }
 
       setMessage({ type: 'success', text: 'Relatório salvo com sucesso!' });
       
@@ -402,8 +406,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   };
 
   // Calcular totais
-  const totalProdutos = products.reduce((sum, product) => sum + product.valor_vendido, 0);
-  const totalSuprimentos = supplies.reduce((sum, supply) => sum + supply.valor_total, 0);
+  const totalProdutos = products.vlr_vendido;
+  const totalSuprimentos = supplies.vlr_total;
 
   if (!isOpen) return null;
 
@@ -925,43 +929,47 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                 <div className="space-y-6">
                   <h3 className="text-lg font-semibold text-gray-900">Suprimento Cofre</h3>
                   
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Denominação</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Unitário</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantidade</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Total</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {supplies.map((supply, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{supply.denominacao}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{formatCurrency(supply.valor_unitario)}</td>
-                            <td className="px-4 py-3">
-                              <input
-                                type="number"
-                                value={supply.quantidade || ''}
-                                onChange={(e) => updateSupply(index, 'quantidade', parseInt(e.target.value) || 0)}
-                                className="w-24 px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder=""
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-sm font-semibold text-green-700">
-                              {formatCurrency(supply.valor_total)}
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="bg-blue-50 font-semibold">
-                          <td colSpan={3} className="px-4 py-3 text-sm text-gray-900 text-right">Valor Total:</td>
-                          <td className="px-4 py-3 text-sm font-bold text-blue-700">
-                            {formatCurrency(totalSuprimentos)}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {Object.entries({
+                      "R$200": "R$ 200,00",
+                      "R$100": "R$ 100,00", 
+                      "R$50": "R$ 50,00",
+                      "R$20": "R$ 20,00",
+                      "R$10": "R$ 10,00",
+                      "R$5": "R$ 5,00",
+                      "R$2": "R$ 2,00",
+                      "R$1": "R$ 1,00",
+                      "R$0,50": "R$ 0,50",
+                      "R$0,25": "R$ 0,25",
+                      "R$0,10": "R$ 0,10",
+                      "R$0,05": "R$ 0,05"
+                    }).map(([key, label]) => (
+                      <div key={key} className="bg-white border border-gray-200 rounded-lg p-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+                        <input
+                          type="number"
+                          value={supplies[key as keyof SupplyData] || ''}
+                          onChange={(e) => updateSupply(key as keyof SupplyData, parseInt(e.target.value) || 0)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="0"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <p className="text-lg font-semibold text-blue-700">
+                          Quantidade Total: {supplies.qtd}
+                        </p>
+                      </div>
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <p className="text-lg font-semibold text-green-700">
+                          Valor Total: {formatCurrency(totalSuprimentos)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

@@ -397,8 +397,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLogin }) => {
                         className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                           errors.operatorCode ? 'border-red-500' : 'border-gray-300'
                         }`}
-                        placeholder="01"
-                        maxLength={2}
+                        placeholder="0000001"
+                        maxLength={7}
                         disabled={loading}
                       />
                     </div>

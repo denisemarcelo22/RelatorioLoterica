@@ -274,7 +274,8 @@ const OperatorRegistrationModal: React.FC<OperatorRegistrationModalProps> = ({
                       errors.operatorCode ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="02, 03, 04..."
-                    maxLength={3}
+                    placeholder="0000002"
+                    maxLength={7}
                     disabled={loading}
                   />
                 </div>
