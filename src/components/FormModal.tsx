@@ -3,6 +3,100 @@ import { X, Save, Calculator, DollarSign, Package } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { User } from '../lib/supabase';
 
+// Utility function to format currency input
+const formatCurrencyInput = (value: string): string => {
+  // Remove all non-numeric characters except comma and dot
+  const cleanValue = value.replace(/[^\d,.-]/g, '');
+  
+  // Replace comma with dot for decimal separator
+  const normalizedValue = cleanValue.replace(',', '.');
+  
+  // Parse and format
+  const numericValue = parseFloat(normalizedValue);
+  if (isNaN(numericValue)) return '0,00';
+  
+  // Format with Brazilian currency format
+  return numericValue.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
+
+// Utility function to parse currency value
+const parseCurrencyValue = (value: string): number => {
+  if (!value || value.trim() === '') return 0;
+  // Remove currency formatting and convert to number
+  const cleanValue = value.replace(/\./g, '').replace(',', '.');
+  const parsed = parseFloat(cleanValue);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+// Currency input component
+interface CurrencyInputProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+const CurrencyInput: React.FC<CurrencyInputProps> = ({ 
+  value, 
+  onChange, 
+  placeholder = "0,00", 
+  disabled = false,
+  className = ""
+}) => {
+  const [displayValue, setDisplayValue] = useState(value);
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setDisplayValue(formatCurrencyInput(value));
+    }
+  }, [value, isFocused]);
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    // Show raw value for editing
+    const rawValue = parseCurrencyValue(value).toString().replace('.', ',');
+    setDisplayValue(rawValue === '0' ? '' : rawValue);
+  };
+
+  const handleBlur = () => {
+    setIsFocused(false);
+    const formattedValue = formatCurrencyInput(displayValue);
+    setDisplayValue(formattedValue);
+    onChange(formattedValue);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    if (isFocused) {
+      // Allow free input while focused
+      setDisplayValue(inputValue);
+    } else {
+      // Format immediately if not focused
+      const formatted = formatCurrencyInput(inputValue);
+      setDisplayValue(formatted);
+      onChange(formatted);
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      value={displayValue}
+      onChange={handleChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+      placeholder={placeholder}
+      disabled={disabled}
+      className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+    />
+  );
+};
+
 interface FormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -131,40 +225,35 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
   // Suprimento data
   const [supplyData, setSupplyData] = useState({
-    'R$200': '0',
-    'R$100': '0',
-    'R$50': '0',
-    'R$20': '0',
-    'R$10': '0',
-    'R$5': '0',
-    'R$2': '0',
-    'R$1': '0',
-    'R$0,50': '0',
-    'R$0,25': '0',
-    'R$0,10': '0',
-    'R$0,05': '0',
+    'R$200': 0,
+    'R$100': 0,
+    'R$50': 0,
+    'R$20': 0,
+    'R$10': 0,
+    'R$5': 0,
+    'R$2': 0,
+    'R$1': 0,
+    'R$0,50': 0,
+    'R$0,25': 0,
+    'R$0,10': 0,
+    'R$0,05': 0,
   });
 
   // Product data
   const [productData, setProductData] = useState({
-    telesena_verde: '0',
-    rodada_da_sorte: '0',
-    federal_10: '0',
-    telesena_lilas: '0',
-    trio: '0',
-    trevo_sorte: '0',
-    federal: '0',
-    telesena: '0',
-    caca_tesouro: '0',
-    so_ouro: '0',
-    telesena_rosa: '0',
-    telesena_amarela: '0',
-    telesena_vermelha: '0',
-    qtd_inicial: '0',
-    qtd_recebida: '0',
-    qtd_devolvida: '0',
-    qtd_final: '0',
-    vlr_vendido: '0'
+    quantidade_tele_sena_verde: 0,
+    quantidade_roda_da_sorte: 0,
+    quantidade_federal_10: 0,
+    quantidade_tele_sena_lilas: 0,
+    quantidade_trio: 0,
+    quantidade_trevo_da_sorte: 0,
+    quantidade_federal: 0,
+    quantidade_tele_sena: 0,
+    quantidade_caca_ao_tesouro: 0,
+    quantidade_so_o_ouro: 0,
+    quantidade_tele_sena_rosa: 0,
+    quantidade_tele_sena_amarela: 0,
+    quantidade_tele_sena_vermelha: 0
   });
 
   useEffect(() => {
