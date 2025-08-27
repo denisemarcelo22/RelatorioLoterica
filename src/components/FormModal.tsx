@@ -3,19 +3,16 @@ import { X, Save, Calculator, DollarSign, Package } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { User } from '../lib/supabase';
 
-// Utility function to format currency input
+// Utility function to format currency input with mask
 const formatCurrencyInput = (value: string): string => {
-  // Remove all non-numeric characters except comma and dot
-  const cleanValue = value.replace(/[^\d,.-]/g, '');
+  // Remove all non-numeric characters
+  const cleanValue = value.replace(/\D/g, '');
   
-  // Replace comma with dot for decimal separator
-  const normalizedValue = cleanValue.replace(',', '.');
+  if (!cleanValue) return '';
   
-  // Parse and format
-  const numericValue = parseFloat(normalizedValue);
-  if (isNaN(numericValue)) return '0,00';
+  // Convert to number and format
+  const numericValue = parseInt(cleanValue) / 100;
   
-  // Format with Brazilian currency format
   return numericValue.toLocaleString('pt-BR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
@@ -31,7 +28,7 @@ const parseCurrencyValue = (value: string): number => {
   return isNaN(parsed) ? 0 : parsed;
 };
 
-// Currency input component
+// Currency input component with mask
 interface CurrencyInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -52,34 +49,43 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
 
   useEffect(() => {
     if (!isFocused) {
-      setDisplayValue(formatCurrencyInput(value));
+      setDisplayValue(value);
     }
   }, [value, isFocused]);
 
   const handleFocus = () => {
     setIsFocused(true);
-    // Show raw value for editing
-    const rawValue = parseCurrencyValue(value).toString().replace('.', ',');
-    setDisplayValue(rawValue === '0' ? '' : rawValue);
   };
 
   const handleBlur = () => {
     setIsFocused(false);
-    const formattedValue = formatCurrencyInput(displayValue);
-    setDisplayValue(formattedValue);
-    onChange(formattedValue);
+    onChange(displayValue);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
+    
     if (isFocused) {
-      // Allow free input while focused
-      setDisplayValue(inputValue);
-    } else {
-      // Format immediately if not focused
+      // Apply currency mask while typing
       const formatted = formatCurrencyInput(inputValue);
       setDisplayValue(formatted);
-      onChange(formatted);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow manual input without mask when user types specific keys
+    if (e.ctrlKey && e.key === 'a') {
+      // Allow select all
+      return;
+    }
+    
+    if (e.key === 'Backspace' || e.key === 'Delete' || e.key === 'Tab' || e.key === 'Enter') {
+      return;
+    }
+    
+    // Allow numbers, comma, and dot
+    if (!/[\d,.]/.test(e.key)) {
+      e.preventDefault();
     }
   };
 
@@ -90,6 +96,7 @@ const CurrencyInput: React.FC<CurrencyInputProps> = ({
       onChange={handleChange}
       onFocus={handleFocus}
       onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
       placeholder={placeholder}
       disabled={disabled}
       className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
@@ -177,84 +184,117 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   const [saving, setSaving] = useState(false);
   
   const [formData, setFormData] = useState<FormData>({
-    moeda_inicial: '0',
-    bolao_inicial: '0',
-    suprimento_inicial: '0',
-    comissao_bolao: '0',
-    venda_produtos: '0',
-    total_caixa_1: '0',
-    total_caixa_2: '0',
-    premios_instantaneos: '0',
-    sangria_corpvs_1: '0',
-    sangria_corpvs_2: '0',
-    sangria_corpvs_3: '0',
-    sangria_corpvs_4: '0',
-    sangria_corpvs_5: '0',
-    sangria_cofre_1: '0',
-    sangria_cofre_2: '0',
-    sangria_cofre_3: '0',
-    sangria_cofre_4: '0',
-    sangria_cofre_5: '0',
-    pix_malote_1: '0',
-    pix_malote_2: '0',
-    pix_malote_3: '0',
-    pix_malote_4: '0',
-    pix_malote_5: '0',
-    recebido_caixa_1: '0',
-    recebido_caixa_2: '0',
-    recebido_caixa_3: '0',
-    recebido_caixa_4: '0',
-    recebido_caixa_5: '0',
-    recebido_caixa_6: '0',
-    vale_loteria_1: '0',
-    vale_loteria_2: '0',
-    vale_loteria_3: '0',
-    vale_loteria_4: '0',
-    vale_loteria_5: '0',
-    repassado_caixa_1: '0',
-    repassado_caixa_2: '0',
-    repassado_caixa_3: '0',
-    repassado_caixa_4: '0',
-    repassado_caixa_5: '0',
-    sangria_final: '0',
-    moeda_final: '0',
-    bolao_final: '0',
-    resgates: '0',
-    diferenca: '0'
+    moeda_inicial: '0,00',
+    bolao_inicial: '0,00',
+    suprimento_inicial: '0,00',
+    comissao_bolao: '0,00',
+    venda_produtos: '0,00',
+    total_caixa_1: '0,00',
+    total_caixa_2: '0,00',
+    premios_instantaneos: '0,00',
+    sangria_corpvs_1: '0,00',
+    sangria_corpvs_2: '0,00',
+    sangria_corpvs_3: '0,00',
+    sangria_corpvs_4: '0,00',
+    sangria_corpvs_5: '0,00',
+    sangria_cofre_1: '0,00',
+    sangria_cofre_2: '0,00',
+    sangria_cofre_3: '0,00',
+    sangria_cofre_4: '0,00',
+    sangria_cofre_5: '0,00',
+    pix_malote_1: '0,00',
+    pix_malote_2: '0,00',
+    pix_malote_3: '0,00',
+    pix_malote_4: '0,00',
+    pix_malote_5: '0,00',
+    recebido_caixa_1: '0,00',
+    recebido_caixa_2: '0,00',
+    recebido_caixa_3: '0,00',
+    recebido_caixa_4: '0,00',
+    recebido_caixa_5: '0,00',
+    recebido_caixa_6: '0,00',
+    vale_loteria_1: '0,00',
+    vale_loteria_2: '0,00',
+    vale_loteria_3: '0,00',
+    vale_loteria_4: '0,00',
+    vale_loteria_5: '0,00',
+    repassado_caixa_1: '0,00',
+    repassado_caixa_2: '0,00',
+    repassado_caixa_3: '0,00',
+    repassado_caixa_4: '0,00',
+    repassado_caixa_5: '0,00',
+    sangria_final: '0,00',
+    moeda_final: '0,00',
+    bolao_final: '0,00',
+    resgates: '0,00',
+    diferenca: '0,00'
   });
 
-  // Suprimento data
+  // Suprimento data - Updated structure
   const [supplyData, setSupplyData] = useState({
-    'R$200': 0,
-    'R$100': 0,
-    'R$50': 0,
-    'R$20': 0,
-    'R$10': 0,
-    'R$5': 0,
-    'R$2': 0,
-    'R$1': 0,
-    'R$0,50': 0,
-    'R$0,25': 0,
-    'R$0,10': 0,
-    'R$0,05': 0,
+    'R$200': '0',
+    'R$100': '0',
+    'R$50': '0',
+    'R$20': '0',
+    'R$10': '0',
+    'R$5': '0',
+    'R$2': '0',
+    'R$1': '0',
+    'R$0,50': '0',
+    'R$0,25': '0',
+    'R$0,10': '0',
+    'R$0,05': '0',
   });
 
-  // Product data
+  // Product data - Updated structure based on new schema
   const [productData, setProductData] = useState({
-    quantidade_tele_sena_verde: 0,
-    quantidade_roda_da_sorte: 0,
-    quantidade_federal_10: 0,
-    quantidade_tele_sena_lilas: 0,
-    quantidade_trio: 0,
-    quantidade_trevo_da_sorte: 0,
-    quantidade_federal: 0,
-    quantidade_tele_sena: 0,
-    quantidade_caca_ao_tesouro: 0,
-    quantidade_so_o_ouro: 0,
-    quantidade_tele_sena_rosa: 0,
-    quantidade_tele_sena_amarela: 0,
-    quantidade_tele_sena_vermelha: 0
+    quantidade_tele_sena_verde: '0',
+    quantidade_roda_da_sorte: '0',
+    quantidade_federal_10: '0',
+    quantidade_tele_sena_lilas: '0',
+    quantidade_trio: '0',
+    quantidade_trevo_da_sorte: '0',
+    quantidade_federal: '0',
+    quantidade_tele_sena: '0',
+    quantidade_caca_ao_tesouro: '0',
+    quantidade_so_o_ouro: '0',
+    quantidade_tele_sena_rosa: '0',
+    quantidade_tele_sena_amarela: '0',
+    quantidade_tele_sena_vermelha: '0'
   });
+
+  // Product values (fixed values from schema)
+  const productValues = {
+    quantidade_tele_sena_verde: 5.00,
+    quantidade_roda_da_sorte: 5.00,
+    quantidade_federal_10: 10.00,
+    quantidade_tele_sena_lilas: 5.00,
+    quantidade_trio: 20.00,
+    quantidade_trevo_da_sorte: 2.50,
+    quantidade_federal: 4.00,
+    quantidade_tele_sena: 15.00,
+    quantidade_caca_ao_tesouro: 10.00,
+    quantidade_so_o_ouro: 2.50,
+    quantidade_tele_sena_rosa: 5.00,
+    quantidade_tele_sena_amarela: 10.00,
+    quantidade_tele_sena_vermelha: 10.00
+  };
+
+  // Supply values
+  const supplyValues = {
+    'R$200': 200,
+    'R$100': 100,
+    'R$50': 50,
+    'R$20': 20,
+    'R$10': 10,
+    'R$5': 5,
+    'R$2': 2,
+    'R$1': 1,
+    'R$0,50': 0.5,
+    'R$0,25': 0.25,
+    'R$0,10': 0.1,
+    'R$0,05': 0.05,
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -276,51 +316,59 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
         .maybeSingle();
 
       if (cashReport) {
+        const formatValue = (value: number | null) => {
+          if (!value) return '0,00';
+          return value.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+        };
+
         const newFormData: FormData = {
-          moeda_inicial: cashReport.moeda_inicial?.toString() || '0',
-          bolao_inicial: cashReport.bolao_inicial?.toString() || '0',
-          suprimento_inicial: cashReport.suprimento_inicial?.toString() || '0',
-          comissao_bolao: cashReport.comissao_bolao?.toString() || '0',
-          venda_produtos: cashReport.venda_produtos?.toString() || '0',
-          total_caixa_1: cashReport.total_caixa_1?.toString() || '0',
-          total_caixa_2: cashReport.total_caixa_2?.toString() || '0',
-          premios_instantaneos: cashReport.premios_instantaneos?.toString() || '0',
-          sangria_corpvs_1: cashReport.sangria_corpvs_1?.toString() || '0',
-          sangria_corpvs_2: cashReport.sangria_corpvs_2?.toString() || '0',
-          sangria_corpvs_3: cashReport.sangria_corpvs_3?.toString() || '0',
-          sangria_corpvs_4: cashReport.sangria_corpvs_4?.toString() || '0',
-          sangria_corpvs_5: cashReport.sangria_corpvs_5?.toString() || '0',
-          sangria_cofre_1: cashReport.sangria_cofre_1?.toString() || '0',
-          sangria_cofre_2: cashReport.sangria_cofre_2?.toString() || '0',
-          sangria_cofre_3: cashReport.sangria_cofre_3?.toString() || '0',
-          sangria_cofre_4: cashReport.sangria_cofre_4?.toString() || '0',
-          sangria_cofre_5: cashReport.sangria_cofre_5?.toString() || '0',
-          pix_malote_1: cashReport.pix_malote_1?.toString() || '0',
-          pix_malote_2: cashReport.pix_malote_2?.toString() || '0',
-          pix_malote_3: cashReport.pix_malote_3?.toString() || '0',
-          pix_malote_4: cashReport.pix_malote_4?.toString() || '0',
-          pix_malote_5: cashReport.pix_malote_5?.toString() || '0',
-          recebido_caixa_1: cashReport.recebido_caixa_1?.toString() || '0',
-          recebido_caixa_2: cashReport.recebido_caixa_2?.toString() || '0',
-          recebido_caixa_3: cashReport.recebido_caixa_3?.toString() || '0',
-          recebido_caixa_4: cashReport.recebido_caixa_4?.toString() || '0',
-          recebido_caixa_5: cashReport.recebido_caixa_5?.toString() || '0',
-          recebido_caixa_6: cashReport.recebido_caixa_6?.toString() || '0',
-          vale_loteria_1: cashReport.vale_loteria_1?.toString() || '0',
-          vale_loteria_2: cashReport.vale_loteria_2?.toString() || '0',
-          vale_loteria_3: cashReport.vale_loteria_3?.toString() || '0',
-          vale_loteria_4: cashReport.vale_loteria_4?.toString() || '0',
-          vale_loteria_5: cashReport.vale_loteria_5?.toString() || '0',
-          repassado_caixa_1: cashReport.repassado_valor_1?.toString() || '0',
-          repassado_caixa_2: cashReport.repassado_valor_2?.toString() || '0',
-          repassado_caixa_3: cashReport.repassado_valor_3?.toString() || '0',
-          repassado_caixa_4: cashReport.repassado_valor_4?.toString() || '0',
-          repassado_caixa_5: cashReport.repassado_valor_5?.toString() || '0',
-          sangria_final: cashReport.sangria_final?.toString() || '0',
-          moeda_final: cashReport.moeda_final?.toString() || '0',
-          bolao_final: cashReport.bolao_final?.toString() || '0',
-          resgates: cashReport.resgates?.toString() || '0',
-          diferenca: cashReport.diferenca?.toString() || '0'
+          moeda_inicial: formatValue(cashReport.moeda_inicial),
+          bolao_inicial: formatValue(cashReport.bolao_inicial),
+          suprimento_inicial: formatValue(cashReport.suprimento_inicial),
+          comissao_bolao: formatValue(cashReport.comissao_bolao),
+          venda_produtos: formatValue(cashReport.venda_produtos),
+          total_caixa_1: formatValue(cashReport.total_caixa_1),
+          total_caixa_2: formatValue(cashReport.total_caixa_2),
+          premios_instantaneos: formatValue(cashReport.premios_instantaneos),
+          sangria_corpvs_1: formatValue(cashReport.sangria_corpvs_1),
+          sangria_corpvs_2: formatValue(cashReport.sangria_corpvs_2),
+          sangria_corpvs_3: formatValue(cashReport.sangria_corpvs_3),
+          sangria_corpvs_4: formatValue(cashReport.sangria_corpvs_4),
+          sangria_corpvs_5: formatValue(cashReport.sangria_corpvs_5),
+          sangria_cofre_1: formatValue(cashReport.sangria_cofre_1),
+          sangria_cofre_2: formatValue(cashReport.sangria_cofre_2),
+          sangria_cofre_3: formatValue(cashReport.sangria_cofre_3),
+          sangria_cofre_4: formatValue(cashReport.sangria_cofre_4),
+          sangria_cofre_5: formatValue(cashReport.sangria_cofre_5),
+          pix_malote_1: formatValue(cashReport.pix_malote_1),
+          pix_malote_2: formatValue(cashReport.pix_malote_2),
+          pix_malote_3: formatValue(cashReport.pix_malote_3),
+          pix_malote_4: formatValue(cashReport.pix_malote_4),
+          pix_malote_5: formatValue(cashReport.pix_malote_5),
+          recebido_caixa_1: formatValue(cashReport.recebido_caixa_1),
+          recebido_caixa_2: formatValue(cashReport.recebido_caixa_2),
+          recebido_caixa_3: formatValue(cashReport.recebido_caixa_3),
+          recebido_caixa_4: formatValue(cashReport.recebido_caixa_4),
+          recebido_caixa_5: formatValue(cashReport.recebido_caixa_5),
+          recebido_caixa_6: formatValue(cashReport.recebido_caixa_6),
+          vale_loteria_1: formatValue(cashReport.vale_loteria_1),
+          vale_loteria_2: formatValue(cashReport.vale_loteria_2),
+          vale_loteria_3: formatValue(cashReport.vale_loteria_3),
+          vale_loteria_4: formatValue(cashReport.vale_loteria_4),
+          vale_loteria_5: formatValue(cashReport.vale_loteria_5),
+          repassado_caixa_1: formatValue(cashReport.repassado_valor_1),
+          repassado_caixa_2: formatValue(cashReport.repassado_valor_2),
+          repassado_caixa_3: formatValue(cashReport.repassado_valor_3),
+          repassado_caixa_4: formatValue(cashReport.repassado_valor_4),
+          repassado_caixa_5: formatValue(cashReport.repassado_valor_5),
+          sangria_final: formatValue(cashReport.sangria_final),
+          moeda_final: formatValue(cashReport.moeda_final),
+          bolao_final: formatValue(cashReport.bolao_final),
+          resgates: formatValue(cashReport.resgates),
+          diferenca: formatValue(cashReport.diferenca)
         };
         setFormData(newFormData);
 
@@ -340,24 +388,22 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
           setSupplyData(newSupplyData);
         }
 
-        // Load product data
+        // Load product data from tb_controle_jogos
         const { data: productReports } = await supabase
-          .from('product_reports')
+          .from('tb_controle_jogos')
           .select('*')
-          .eq('cash_report_id', cashReport.id);
+          .eq('fechamento_id', cashReport.id);
 
         if (productReports && productReports.length > 0) {
           const newProductData = { ...productData };
           productReports.forEach(product => {
-            if (product.product_name in newProductData) {
-              newProductData[product.product_name as keyof typeof newProductData] = product.inicial?.toString() || '0';
-            }
+            // Map database fields to our state
+            Object.keys(newProductData).forEach(key => {
+              if (product[key] !== undefined) {
+                newProductData[key as keyof typeof newProductData] = product[key]?.toString() || '0';
+              }
+            });
           });
-          // Set totals
-          newProductData.qtd_inicial = productReports.reduce((sum, p) => sum + (p.inicial || 0), 0).toString();
-          newProductData.qtd_recebida = productReports.reduce((sum, p) => sum + (p.recebi || 0), 0).toString();
-          newProductData.qtd_devolvida = productReports.reduce((sum, p) => sum + (p.devolvi || 0), 0).toString();
-          newProductData.qtd_final = productReports.reduce((sum, p) => sum + (p.final || 0), 0).toString();
           setProductData(newProductData);
         }
       }
@@ -370,9 +416,15 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
   const parseValue = (value: string): number => {
     if (!value || value.trim() === '') return 0;
-    // Replace comma with dot and parse
-    const cleanValue = value.replace(',', '.');
+    // Handle both comma and dot as decimal separator
+    const cleanValue = value.replace(/\./g, '').replace(',', '.');
     const parsed = parseFloat(cleanValue);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  const parseIntValue = (value: string): number => {
+    if (!value || value.trim() === '') return 0;
+    const parsed = parseInt(value);
     return isNaN(parsed) ? 0 : parsed;
   };
 
@@ -398,47 +450,42 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
   };
 
   const calculateSupplyTotal = () => {
-    const values = {
-      'R$200': 200,
-      'R$100': 100,
-      'R$50': 50,
-      'R$20': 20,
-      'R$10': 10,
-      'R$5': 5,
-      'R$2': 2,
-      'R$1': 1,
-      'R$0,50': 0.5,
-      'R$0,25': 0.25,
-      'R$0,10': 0.1,
-      'R$0,05': 0.05,
-    };
-
     return Object.entries(supplyData).reduce((total, [denom, qty]) => {
-      return total + (parseValue(qty) * values[denom as keyof typeof values]);
+      return total + (parseIntValue(qty) * supplyValues[denom as keyof typeof supplyValues]);
     }, 0);
   };
 
   const calculateTotalQuantity = () => {
-    return Object.values(supplyData).reduce((total, qty) => total + parseValue(qty), 0);
+    return Object.values(supplyData).reduce((total, qty) => total + parseIntValue(qty), 0);
+  };
+
+  const calculateProductTotal = () => {
+    return Object.entries(productData).reduce((total, [product, qty]) => {
+      return total + (parseIntValue(qty) * productValues[product as keyof typeof productValues]);
+    }, 0);
+  };
+
+  const calculateTotalProductQuantity = () => {
+    return Object.values(productData).reduce((total, qty) => total + parseIntValue(qty), 0);
   };
 
   const calculateDifference = () => {
-    const totalEntradas = parseValue(formData.moeda_inicial) + 
-                         parseValue(formData.bolao_inicial) + 
-                         parseValue(formData.suprimento_inicial) +
-                         parseValue(formData.comissao_bolao) + 
-                         parseValue(formData.venda_produtos);
+    const totalEntradas = parseCurrencyValue(formData.moeda_inicial) + 
+                         parseCurrencyValue(formData.bolao_inicial) + 
+                         parseCurrencyValue(formData.suprimento_inicial) +
+                         parseCurrencyValue(formData.comissao_bolao) + 
+                         parseCurrencyValue(formData.venda_produtos);
 
-    const totalSaidas = parseValue(formData.premios_instantaneos) +
-                       parseValue(formData.sangria_corpvs_1) + parseValue(formData.sangria_corpvs_2) + 
-                       parseValue(formData.sangria_corpvs_3) + parseValue(formData.sangria_corpvs_4) + 
-                       parseValue(formData.sangria_corpvs_5) +
-                       parseValue(formData.sangria_cofre_1) + parseValue(formData.sangria_cofre_2) + 
-                       parseValue(formData.sangria_cofre_3) + parseValue(formData.sangria_cofre_4) + 
-                       parseValue(formData.sangria_cofre_5) +
-                       parseValue(formData.resgates);
+    const totalSaidas = parseCurrencyValue(formData.premios_instantaneos) +
+                       parseCurrencyValue(formData.sangria_corpvs_1) + parseCurrencyValue(formData.sangria_corpvs_2) + 
+                       parseCurrencyValue(formData.sangria_corpvs_3) + parseCurrencyValue(formData.sangria_corpvs_4) + 
+                       parseCurrencyValue(formData.sangria_corpvs_5) +
+                       parseCurrencyValue(formData.sangria_cofre_1) + parseCurrencyValue(formData.sangria_cofre_2) + 
+                       parseCurrencyValue(formData.sangria_cofre_3) + parseCurrencyValue(formData.sangria_cofre_4) + 
+                       parseCurrencyValue(formData.sangria_cofre_5) +
+                       parseCurrencyValue(formData.resgates);
 
-    const totalFinal = parseValue(formData.moeda_final) + parseValue(formData.bolao_final);
+    const totalFinal = parseCurrencyValue(formData.moeda_final) + parseCurrencyValue(formData.bolao_final);
     
     return totalEntradas - totalSaidas - totalFinal;
   };
@@ -456,49 +503,49 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
         user_id: user.id,
         operator_code: user.cod_operador,
         report_date: today,
-        moeda_inicial: parseValue(formData.moeda_inicial),
-        bolao_inicial: parseValue(formData.bolao_inicial),
-        suprimento_inicial: parseValue(formData.suprimento_inicial),
-        comissao_bolao: parseValue(formData.comissao_bolao),
-        venda_produtos: parseValue(formData.venda_produtos),
-        total_caixa_1: parseValue(formData.total_caixa_1),
-        total_caixa_2: parseValue(formData.total_caixa_2),
-        premios_instantaneos: parseValue(formData.premios_instantaneos),
-        sangria_corpvs_1: parseValue(formData.sangria_corpvs_1),
-        sangria_corpvs_2: parseValue(formData.sangria_corpvs_2),
-        sangria_corpvs_3: parseValue(formData.sangria_corpvs_3),
-        sangria_corpvs_4: parseValue(formData.sangria_corpvs_4),
-        sangria_corpvs_5: parseValue(formData.sangria_corpvs_5),
-        sangria_cofre_1: parseValue(formData.sangria_cofre_1),
-        sangria_cofre_2: parseValue(formData.sangria_cofre_2),
-        sangria_cofre_3: parseValue(formData.sangria_cofre_3),
-        sangria_cofre_4: parseValue(formData.sangria_cofre_4),
-        sangria_cofre_5: parseValue(formData.sangria_cofre_5),
-        pix_malote_1: parseValue(formData.pix_malote_1),
-        pix_malote_2: parseValue(formData.pix_malote_2),
-        pix_malote_3: parseValue(formData.pix_malote_3),
-        pix_malote_4: parseValue(formData.pix_malote_4),
-        pix_malote_5: parseValue(formData.pix_malote_5),
-        recebido_caixa_1: parseValue(formData.recebido_caixa_1),
-        recebido_caixa_2: parseValue(formData.recebido_caixa_2),
-        recebido_caixa_3: parseValue(formData.recebido_caixa_3),
-        recebido_caixa_4: parseValue(formData.recebido_caixa_4),
-        recebido_caixa_5: parseValue(formData.recebido_caixa_5),
-        recebido_caixa_6: parseValue(formData.recebido_caixa_6),
-        vale_loteria_1: parseValue(formData.vale_loteria_1),
-        vale_loteria_2: parseValue(formData.vale_loteria_2),
-        vale_loteria_3: parseValue(formData.vale_loteria_3),
-        vale_loteria_4: parseValue(formData.vale_loteria_4),
-        vale_loteria_5: parseValue(formData.vale_loteria_5),
-        repassado_valor_1: parseValue(formData.repassado_caixa_1),
-        repassado_valor_2: parseValue(formData.repassado_caixa_2),
-        repassado_valor_3: parseValue(formData.repassado_caixa_3),
-        repassado_valor_4: parseValue(formData.repassado_caixa_4),
-        repassado_valor_5: parseValue(formData.repassado_caixa_5),
-        sangria_final: parseValue(formData.sangria_final),
-        moeda_final: parseValue(formData.moeda_final),
-        bolao_final: parseValue(formData.bolao_final),
-        resgates: parseValue(formData.resgates),
+        moeda_inicial: parseCurrencyValue(formData.moeda_inicial),
+        bolao_inicial: parseCurrencyValue(formData.bolao_inicial),
+        suprimento_inicial: parseCurrencyValue(formData.suprimento_inicial),
+        comissao_bolao: parseCurrencyValue(formData.comissao_bolao),
+        venda_produtos: parseCurrencyValue(formData.venda_produtos),
+        total_caixa_1: parseCurrencyValue(formData.total_caixa_1),
+        total_caixa_2: parseCurrencyValue(formData.total_caixa_2),
+        premios_instantaneos: parseCurrencyValue(formData.premios_instantaneos),
+        sangria_corpvs_1: parseCurrencyValue(formData.sangria_corpvs_1),
+        sangria_corpvs_2: parseCurrencyValue(formData.sangria_corpvs_2),
+        sangria_corpvs_3: parseCurrencyValue(formData.sangria_corpvs_3),
+        sangria_corpvs_4: parseCurrencyValue(formData.sangria_corpvs_4),
+        sangria_corpvs_5: parseCurrencyValue(formData.sangria_corpvs_5),
+        sangria_cofre_1: parseCurrencyValue(formData.sangria_cofre_1),
+        sangria_cofre_2: parseCurrencyValue(formData.sangria_cofre_2),
+        sangria_cofre_3: parseCurrencyValue(formData.sangria_cofre_3),
+        sangria_cofre_4: parseCurrencyValue(formData.sangria_cofre_4),
+        sangria_cofre_5: parseCurrencyValue(formData.sangria_cofre_5),
+        pix_malote_1: parseCurrencyValue(formData.pix_malote_1),
+        pix_malote_2: parseCurrencyValue(formData.pix_malote_2),
+        pix_malote_3: parseCurrencyValue(formData.pix_malote_3),
+        pix_malote_4: parseCurrencyValue(formData.pix_malote_4),
+        pix_malote_5: parseCurrencyValue(formData.pix_malote_5),
+        recebido_caixa_1: parseCurrencyValue(formData.recebido_caixa_1),
+        recebido_caixa_2: parseCurrencyValue(formData.recebido_caixa_2),
+        recebido_caixa_3: parseCurrencyValue(formData.recebido_caixa_3),
+        recebido_caixa_4: parseCurrencyValue(formData.recebido_caixa_4),
+        recebido_caixa_5: parseCurrencyValue(formData.recebido_caixa_5),
+        recebido_caixa_6: parseCurrencyValue(formData.recebido_caixa_6),
+        vale_loteria_1: parseCurrencyValue(formData.vale_loteria_1),
+        vale_loteria_2: parseCurrencyValue(formData.vale_loteria_2),
+        vale_loteria_3: parseCurrencyValue(formData.vale_loteria_3),
+        vale_loteria_4: parseCurrencyValue(formData.vale_loteria_4),
+        vale_loteria_5: parseCurrencyValue(formData.vale_loteria_5),
+        repassado_valor_1: parseCurrencyValue(formData.repassado_caixa_1),
+        repassado_valor_2: parseCurrencyValue(formData.repassado_caixa_2),
+        repassado_valor_3: parseCurrencyValue(formData.repassado_caixa_3),
+        repassado_valor_4: parseCurrencyValue(formData.repassado_caixa_4),
+        repassado_valor_5: parseCurrencyValue(formData.repassado_caixa_5),
+        sangria_final: parseCurrencyValue(formData.sangria_final),
+        moeda_final: parseCurrencyValue(formData.moeda_final),
+        bolao_final: parseCurrencyValue(formData.bolao_final),
+        resgates: parseCurrencyValue(formData.resgates),
         diferenca: diferenca
       };
 
@@ -513,59 +560,56 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
       if (cashError) throw cashError;
 
-      // Save supply data
-      const supplyRecords = Object.entries(supplyData).map(([denomination, quantity]) => ({
-        cash_report_id: savedReport.id,
-        denomination,
-        quantity: parseValue(quantity),
-        unit_value: {
-          'R$200': 200, 'R$100': 100, 'R$50': 50, 'R$20': 20, 'R$10': 10, 'R$5': 5,
-          'R$2': 2, 'R$1': 1, 'R$0,50': 0.5, 'R$0,25': 0.25, 'R$0,10': 0.1, 'R$0,05': 0.05
-        }[denomination] || 0
-      }));
+      // Save supply data to tb_suprimento_cofre
+      const supplyRecords = Object.entries(supplyData)
+        .filter(([, quantity]) => parseIntValue(quantity) > 0)
+        .map(([denomination, quantity]) => ({
+          user_id: user.id,
+          fechamento_id: savedReport.id,
+          cod_operador: user.cod_operador,
+          denominacao: denomination,
+          valor_unitario: supplyValues[denomination as keyof typeof supplyValues],
+          quantidade: parseIntValue(quantity),
+          valor_total: parseIntValue(quantity) * supplyValues[denomination as keyof typeof supplyValues]
+        }));
 
       // Delete existing supply records
       await supabase
-        .from('supply_reports')
+        .from('tb_suprimento_cofre')
         .delete()
-        .eq('cash_report_id', savedReport.id);
+        .eq('fechamento_id', savedReport.id);
 
       // Insert new supply records
-      if (supplyRecords.some(record => record.quantity > 0)) {
+      if (supplyRecords.length > 0) {
         const { error: supplyError } = await supabase
-          .from('supply_reports')
-          .insert(supplyRecords.filter(record => record.quantity > 0));
+          .from('tb_suprimento_cofre')
+          .insert(supplyRecords);
 
         if (supplyError) throw supplyError;
       }
 
-      // Save product data
-      const productRecords = Object.entries(productData).filter(([key]) => 
-        !['qtd_inicial', 'qtd_recebida', 'qtd_devolvida', 'qtd_final', 'vlr_vendido'].includes(key)
-      ).map(([productName, quantity]) => ({
-        cash_report_id: savedReport.id,
-        product_name: productName,
-        unit_value: 5.00, // Default unit value
-        inicial: parseValue(quantity),
-        recebi: 0,
-        devolvi: 0,
-        final: parseValue(quantity)
-      }));
+      // Save product data to tb_controle_jogos
+      const productRecord = {
+        user_id: user.id,
+        fechamento_id: savedReport.id,
+        cod_operador: user.cod_operador,
+        ...Object.fromEntries(
+          Object.entries(productData).map(([key, value]) => [key, parseIntValue(value)])
+        )
+      };
 
       // Delete existing product records
       await supabase
-        .from('product_reports')
+        .from('tb_controle_jogos')
         .delete()
-        .eq('cash_report_id', savedReport.id);
+        .eq('fechamento_id', savedReport.id);
 
-      // Insert new product records
-      if (productRecords.some(record => record.inicial > 0)) {
-        const { error: productError } = await supabase
-          .from('product_reports')
-          .insert(productRecords.filter(record => record.inicial > 0));
+      // Insert new product record
+      const { error: productError } = await supabase
+        .from('tb_controle_jogos')
+        .insert([productRecord]);
 
-        if (productError) throw productError;
-      }
+      if (productError) throw productError;
 
       alert('Relatório salvo com sucesso!');
       onClose();
@@ -662,11 +706,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Moeda Inicial
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.moeda_inicial}
-                          onChange={(e) => handleInputChange('moeda_inicial', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('moeda_inicial', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -674,11 +716,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Bolão Inicial
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.bolao_inicial}
-                          onChange={(e) => handleInputChange('bolao_inicial', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('bolao_inicial', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -686,11 +726,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Suprimento Inicial
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.suprimento_inicial}
-                          onChange={(e) => handleInputChange('suprimento_inicial', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('suprimento_inicial', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -705,11 +743,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Comissão Bolão
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.comissao_bolao}
-                          onChange={(e) => handleInputChange('comissao_bolao', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('comissao_bolao', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -717,11 +753,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Venda Produtos
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.venda_produtos}
-                          onChange={(e) => handleInputChange('venda_produtos', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('venda_produtos', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -736,11 +770,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Total Caixa 1
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.total_caixa_1}
-                          onChange={(e) => handleInputChange('total_caixa_1', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('total_caixa_1', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -748,11 +780,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Total Caixa 2
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.total_caixa_2}
-                          onChange={(e) => handleInputChange('total_caixa_2', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('total_caixa_2', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -760,11 +790,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Prêmios Instantâneos
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.premios_instantaneos}
-                          onChange={(e) => handleInputChange('premios_instantaneos', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('premios_instantaneos', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -780,11 +808,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Sangria CORPVS {num}
                           </label>
-                          <input
-                            type="text"
+                          <CurrencyInput
                             value={formData[`sangria_corpvs_${num}` as keyof FormData]}
-                            onChange={(e) => handleInputChange(`sangria_corpvs_${num}` as keyof FormData, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(value) => handleInputChange(`sangria_corpvs_${num}` as keyof FormData, value)}
                             placeholder="0,00"
                           />
                         </div>
@@ -801,11 +827,85 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Sangria Cofre {num}
                           </label>
-                          <input
-                            type="text"
+                          <CurrencyInput
                             value={formData[`sangria_cofre_${num}` as keyof FormData]}
-                            onChange={(e) => handleInputChange(`sangria_cofre_${num}` as keyof FormData, e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(value) => handleInputChange(`sangria_cofre_${num}` as keyof FormData, value)}
+                            placeholder="0,00"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* PIX Malote */}
+                  <div className="bg-indigo-50 rounded-lg p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">PIX Malote</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      {[1, 2, 3, 4, 5].map(num => (
+                        <div key={num}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            PIX Malote {num}
+                          </label>
+                          <CurrencyInput
+                            value={formData[`pix_malote_${num}` as keyof FormData]}
+                            onChange={(value) => handleInputChange(`pix_malote_${num}` as keyof FormData, value)}
+                            placeholder="0,00"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Recebido Caixa */}
+                  <div className="bg-teal-50 rounded-lg p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Recebido Caixa</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                      {[1, 2, 3, 4, 5, 6].map(num => (
+                        <div key={num}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Recebido Caixa {num}
+                          </label>
+                          <CurrencyInput
+                            value={formData[`recebido_caixa_${num}` as keyof FormData]}
+                            onChange={(value) => handleInputChange(`recebido_caixa_${num}` as keyof FormData, value)}
+                            placeholder="0,00"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Vale Loteria */}
+                  <div className="bg-pink-50 rounded-lg p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Vale Loteria</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      {[1, 2, 3, 4, 5].map(num => (
+                        <div key={num}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Vale Loteria {num}
+                          </label>
+                          <CurrencyInput
+                            value={formData[`vale_loteria_${num}` as keyof FormData]}
+                            onChange={(value) => handleInputChange(`vale_loteria_${num}` as keyof FormData, value)}
+                            placeholder="0,00"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Repassado Caixa */}
+                  <div className="bg-cyan-50 rounded-lg p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Repassado Caixa</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      {[1, 2, 3, 4, 5].map(num => (
+                        <div key={num}>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Repassado Caixa {num}
+                          </label>
+                          <CurrencyInput
+                            value={formData[`repassado_caixa_${num}` as keyof FormData]}
+                            onChange={(value) => handleInputChange(`repassado_caixa_${num}` as keyof FormData, value)}
                             placeholder="0,00"
                           />
                         </div>
@@ -821,11 +921,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Sangria Final
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.sangria_final}
-                          onChange={(e) => handleInputChange('sangria_final', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('sangria_final', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -833,11 +931,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Moeda Final
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.moeda_final}
-                          onChange={(e) => handleInputChange('moeda_final', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('moeda_final', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -845,11 +941,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Bolão Final
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.bolao_final}
-                          onChange={(e) => handleInputChange('bolao_final', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('bolao_final', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -857,11 +951,9 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                           Resgates
                         </label>
-                        <input
-                          type="text"
+                        <CurrencyInput
                           value={formData.resgates}
-                          onChange={(e) => handleInputChange('resgates', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          onChange={(value) => handleInputChange('resgates', value)}
                           placeholder="0,00"
                         />
                       </div>
@@ -892,12 +984,16 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                           {denomination}
                         </label>
                         <input
-                          type="text"
+                          type="number"
                           value={quantity}
                           onChange={(e) => handleSupplyChange(denomination, e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="0"
+                          min="0"
                         />
+                        <div className="text-xs text-gray-500 mt-1">
+                          Total: {formatCurrency(parseIntValue(quantity) * supplyValues[denomination as keyof typeof supplyValues])}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -920,47 +1016,45 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
                 <div className="space-y-6">
                   <h3 className="text-lg font-medium text-gray-900">Produtos de Loteria</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {Object.entries(productData).filter(([key]) => 
-                      !['qtd_inicial', 'qtd_recebida', 'qtd_devolvida', 'qtd_final', 'vlr_vendido'].includes(key)
-                    ).map(([product, quantity]) => (
-                      <div key={product} className="bg-gray-50 p-4 rounded-lg">
-                        <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
-                          {product.replace(/_/g, ' ')}
-                        </label>
-                        <input
-                          type="text"
-                          value={quantity}
-                          onChange={(e) => handleProductChange(product, e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="0"
-                        />
-                      </div>
-                    ))}
+                    {Object.entries(productData).map(([product, quantity]) => {
+                      const productName = product.replace('quantidade_', '').replace(/_/g, ' ').toUpperCase();
+                      const unitValue = productValues[product as keyof typeof productValues];
+                      
+                      return (
+                        <div key={product} className="bg-gray-50 p-4 rounded-lg">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            {productName}
+                          </label>
+                          <input
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => handleProductChange(product, e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="0"
+                            min="0"
+                          />
+                          <div className="text-xs text-gray-500 mt-1">
+                            Valor Unit.: {formatCurrency(unitValue)}
+                          </div>
+                          <div className="text-xs text-gray-600 mt-1">
+                            Total: {formatCurrency(parseIntValue(quantity) * unitValue)}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
-                        <span className="block text-sm text-gray-600">Qtd. Inicial</span>
+                        <span className="block text-sm text-gray-600">Quantidade Total</span>
                         <span className="text-lg font-bold text-gray-900">
-                          {Object.entries(productData).filter(([key]) => 
-                            !['qtd_inicial', 'qtd_recebida', 'qtd_devolvida', 'qtd_final', 'vlr_vendido'].includes(key)
-                          ).reduce((sum, [, qty]) => sum + parseValue(qty), 0)}
+                          {calculateTotalProductQuantity()}
                         </span>
                       </div>
                       <div className="text-center">
-                        <span className="block text-sm text-gray-600">Qtd. Recebida</span>
-                        <span className="text-lg font-bold text-green-600">0</span>
-                      </div>
-                      <div className="text-center">
-                        <span className="block text-sm text-gray-600">Qtd. Devolvida</span>
-                        <span className="text-lg font-bold text-red-600">0</span>
-                      </div>
-                      <div className="text-center">
-                        <span className="block text-sm text-gray-600">Qtd. Final</span>
-                        <span className="text-lg font-bold text-blue-600">
-                          {Object.entries(productData).filter(([key]) => 
-                            !['qtd_inicial', 'qtd_recebida', 'qtd_devolvida', 'qtd_final', 'vlr_vendido'].includes(key)
-                          ).reduce((sum, [, qty]) => sum + parseValue(qty), 0)}
+                        <span className="block text-sm text-gray-600">Valor Total</span>
+                        <span className="text-lg font-bold text-green-600">
+                          {formatCurrency(calculateProductTotal())}
                         </span>
                       </div>
                     </div>
