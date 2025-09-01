@@ -311,7 +311,8 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
       const { data: cashReport } = await supabase
         .from('cash_reports')
         .select('*')
-        .eq('user_id', user.id)
+        // .eq('user_id', user.id) //NÃO EXISTE MAIS A REFERÊNCIA NA TABELA
+        .eq('operator_code', user.operator_code)
         .eq('report_date', today)
         .maybeSingle();
 
