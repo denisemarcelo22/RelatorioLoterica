@@ -21,20 +21,20 @@
 
 -- Primeiro, vamos garantir que tb_usuario.user_id tenha uma constraint única
 -- Isso é necessário para criar foreign keys
-DO $$
+/*DO $$
 BEGIN
     -- Verificar se já existe uma constraint única em user_id
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.table_constraints tc
         JOIN information_schema.key_column_usage kcu ON tc.constraint_name = kcu.constraint_name
         WHERE tc.table_name = 'tb_usuario' 
-        AND kcu.column_name = 'user_id'
+        --AND kcu.column_name = 'user_id'
         AND tc.constraint_type = 'UNIQUE'
     ) THEN
         -- Adicionar constraint única em user_id
         ALTER TABLE tb_usuario ADD CONSTRAINT tb_usuario_user_id_unique UNIQUE (user_id);
     END IF;
-END $$;
+END $$;*/
 
 -- Agora vamos remover as foreign keys existentes que referenciam auth.users diretamente
 -- e criar novas que referenciam tb_usuario.user_id
@@ -70,11 +70,11 @@ BEGIN
     END IF;
     
     -- Adicionar nova constraint referenciando tb_usuario
-    ALTER TABLE tb_controle_jogos 
+   /* ALTER TABLE tb_controle_jogos 
     ADD CONSTRAINT tb_controle_jogos_user_id_fkey 
     FOREIGN KEY (user_id) REFERENCES tb_usuario(user_id) ON DELETE CASCADE;
 END $$;
-
+*/
 -- Para tb_suprimento_cofre
 DO $$
 BEGIN
@@ -88,10 +88,10 @@ BEGIN
     END IF;
     
     -- Adicionar nova constraint referenciando tb_usuario
-    ALTER TABLE tb_suprimento_cofre 
+   /* ALTER TABLE tb_suprimento_cofre 
     ADD CONSTRAINT tb_suprimento_cofre_user_id_fkey 
     FOREIGN KEY (user_id) REFERENCES tb_usuario(user_id) ON DELETE CASCADE;
-END $$;
+END $$;*/
 
 -- Para cash_reports (se existir)
 DO $$
@@ -111,12 +111,12 @@ BEGIN
         END IF;
         
         -- Adicionar nova constraint referenciando tb_usuario
-        ALTER TABLE cash_reports 
+       /* ALTER TABLE cash_reports 
         ADD CONSTRAINT cash_reports_user_id_fkey 
         FOREIGN KEY (user_id) REFERENCES tb_usuario(user_id) ON DELETE SET NULL;
     END IF;
 END $$;
-
+*/
 -- Para product_reports (se existir)
 DO $$
 BEGIN
@@ -156,7 +156,7 @@ BEGIN
 END $$;
 
 -- Criar ou atualizar a função is_admin para usar tb_usuario
-CREATE OR REPLACE FUNCTION is_admin(user_uuid uuid)
+/*CREATE OR REPLACE FUNCTION is_admin(user_uuid uuid)
 RETURNS boolean
 LANGUAGE sql
 SECURITY DEFINER
@@ -168,7 +168,7 @@ AS $$
     AND tipo_usuario = 'admin'
     AND ativo = true
   );
-$$;
+$$;*/
 
 -- Criar função para obter código do operador
 CREATE OR REPLACE FUNCTION get_user_operator_code(user_uuid uuid)
@@ -178,7 +178,7 @@ SECURITY DEFINER
 STABLE
 AS $$
   SELECT cod_operador FROM tb_usuario 
-  WHERE user_id = user_uuid 
+  WHERE user_id = ...
   AND ativo = true
   LIMIT 1;
 $$;
@@ -192,7 +192,7 @@ STABLE
 AS $$
   SELECT EXISTS (
     SELECT 1 FROM tb_usuario 
-    WHERE user_id = user_uuid 
+    WHERE user_id = ...
     AND ativo = true
   );
 $$;
