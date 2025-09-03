@@ -37,7 +37,6 @@ interface AdminDashboardProps {
 
 interface CashReportWithDetails {
   id: string;
-  user_id: string;
   cod_operador: string;
   data_fechamento: string;
   moeda_inicial: number;
@@ -204,7 +203,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
       
       // Enrich reports with operator names
       const enrichedReports = reportsData.map(report => {
-        const operator = operatorsData.find(op => op.id === report.user_id);
+        const operator = operatorsData.find(op => op.cod_operador === report.cod_operador);
         return {
           ...report,
           operator_name: operator ? operator.nome : `Operador ${report.cod_operador}`
@@ -232,7 +231,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
       setOperators(prev => prev.filter(op => op.id !== deleteModal.operator?.id));
       
       // Also remove any reports from this operator
-      setReports(prev => prev.filter(report => report.user_id !== deleteModal.operator?.id));
+      setReports(prev => prev.filter(report => report.cod_operador !== deleteModal.operator?.cod_operador));
       
       // Close modal
       setDeleteModal({ isOpen: false, operator: null, loading: false });

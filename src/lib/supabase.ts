@@ -23,7 +23,6 @@ export interface User {
 
 export interface CashReport {
   id: string;
-  user_id: string;
   cod_operador: string;
   data_fechamento: string;
   moeda_inicial: number;
@@ -76,7 +75,6 @@ export interface CashReport {
 
 export interface ProductReport {
   id: string;
-  user_id: string;
   fechamento_id: string;
   cod_operador: string;
   telesena_verde: number;
@@ -103,7 +101,6 @@ export interface ProductReport {
 
 export interface SupplyReport {
   id: string;
-  user_id: string;
   fechamento_id: string;
   cod_operador: string;
   "R$200": number;
@@ -348,7 +345,7 @@ export const saveCashReport = async (reportData: Partial<CashReport>) => {
   const { data, error } = await supabase
     .from('tb_fechamento_caixa')
     .upsert(reportData, {
-      onConflict: 'user_id,data_fechamento'
+      onConflict: 'cod_operador,data_fechamento'
     })
     .select()
     .single();
@@ -357,13 +354,13 @@ export const saveCashReport = async (reportData: Partial<CashReport>) => {
   return data;
 };
 
-export const getCashReport = async (userId: string, date?: string) => {
+export const getCashReport = async (operatorCode: string, date?: string) => {
   const reportDate = date || new Date().toISOString().split('T')[0];
   
   const { data, error } = await supabase
     .from('tb_fechamento_caixa')
     .select('*')
-    .eq('user_id', userId)
+    .eq('cod_operador', operatorCode)
     .eq('data_fechamento', reportDate)
     .maybeSingle();
 

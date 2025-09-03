@@ -4,7 +4,6 @@ import { getProductReports, getSupplyReports, ProductReport, SupplyReport } from
 
 interface CashReportWithDetails {
   id: string;
-  user_id: string;
   cod_operador: string;
   data_fechamento: string;
   moeda_inicial: number;

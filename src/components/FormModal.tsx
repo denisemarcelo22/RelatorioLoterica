@@ -311,8 +311,7 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
       const { data: cashReport } = await supabase
         .from('cash_reports')
         .select('*')
-        // .eq('user_id', user.id) //NÃO EXISTE MAIS A REFERÊNCIA NA TABELA
-        .eq('operator_code', user.operator_code)
+        .eq('operator_code', user.cod_operador)
         .eq('report_date', today)
         .maybeSingle();
 
@@ -501,7 +500,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
       // Prepare cash report data
       const cashReportData = {
-        user_id: user.id,
         operator_code: user.cod_operador,
         report_date: today,
         moeda_inicial: parseCurrencyValue(formData.moeda_inicial),
@@ -565,7 +563,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
       const supplyRecords = Object.entries(supplyData)
         .filter(([, quantity]) => parseIntValue(quantity) > 0)
         .map(([denomination, quantity]) => ({
-          user_id: user.id,
           fechamento_id: savedReport.id,
           cod_operador: user.cod_operador,
           denominacao: denomination,
@@ -591,7 +588,6 @@ const FormModal: React.FC<FormModalProps> = ({ isOpen, onClose, user }) => {
 
       // Save product data to tb_controle_jogos
       const productRecord = {
-        user_id: user.id,
         fechamento_id: savedReport.id,
         cod_operador: user.cod_operador,
         ...Object.fromEntries(
