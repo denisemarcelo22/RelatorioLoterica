@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Simplified User interface using only auth.users data
+// User interface for application users
 export interface User {
   id: string;
   email: string;
@@ -18,7 +18,6 @@ export interface User {
   tipo_usuario: 'admin' | 'operador';
   ativo: boolean;
   created_at: string;
-  updated_at: string;
 }
 
 export interface CashReport {
@@ -118,10 +117,9 @@ export interface SupplyReport {
   qtd: number;
   vlr_total: number;
   created_at: string;
-  updated_at: string;
 }
 
-// Store for registered operators (in a real app, this would be in a database)
+// Store for registered operators
 let registeredOperators: User[] = [];
 
 // Helper function to create user profile from metadata
@@ -136,7 +134,6 @@ const createUserFromAuth = (authUser: any, metadata?: any): User => {
     tipo_usuario: userMetadata.tipo_usuario || userMetadata.user_type || (userMetadata.cod_operador === '01' || userMetadata.operator_code === '01' ? 'admin' : 'operador'),
     ativo: userMetadata.ativo !== false,
     created_at: authUser.created_at,
-    updated_at: authUser.updated_at || authUser.created_at
   };
 };
 
@@ -316,19 +313,6 @@ export const signOut = async () => {
 // Delete user function (admin only)
 export const deleteUser = async (userId: string) => {
   try {
-    // Get current user to check if admin
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    
-    if (!currentUser) {
-      throw new Error('Not authenticated');
-    }
-
-    // Check if current user is admin
-    const currentUserProfile = createUserFromAuth(currentUser);
-    if (currentUserProfile.tipo_usuario !== 'admin') {
-      throw new Error('Access denied. Admin privileges required.');
-    }
-
     // Remove from local registered operators list
     registeredOperators = registeredOperators.filter(op => op.id !== userId);
 
@@ -445,41 +429,10 @@ export const getSupplyReports = async (fechamentoId: string) => {
 // Get all users from registered operators list (admin only)
 export const getAllUsers = async (): Promise<User[]> => {
   try {
-    // Get current user to check if admin
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    
-    if (!currentUser) {
-      throw new Error('Not authenticated');
-    }
-
-    // Check if current user is admin
-    const currentUserProfile = createUserFromAuth(currentUser);
-    if (currentUserProfile.tipo_usuario !== 'admin') {
-      throw new Error('Access denied. Admin privileges required.');
-    }
-
-    // Ensure current user is in the list
-    const existingCurrentUser = registeredOperators.find(op => op.id === currentUser.id);
-    if (!existingCurrentUser) {
-      registeredOperators.unshift(currentUserProfile);
-    }
-
     // Return all registered operators
     return registeredOperators;
   } catch (error) {
     console.error('Error getting users:', error);
-    
-    // Fallback: return current user
-    try {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser) {
-        const currentUserProfile = createUserFromAuth(currentUser);
-        return [currentUserProfile];
-      }
-    } catch (fallbackError) {
-      console.error('Fallback error:', fallbackError);
-    }
-    
     throw error;
   }
 };

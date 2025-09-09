@@ -247,11 +247,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     }
   };
 
-  const toggleOperatorPermission = async (operator: UserType) => {
-    // This would require a backend function to update user metadata
-    // For now, we'll show an alert
-    alert(`Funcionalidade de alteração de permissão será implementada em breve para ${operator.nome}`);
-  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -754,13 +749,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
                               
                               {operator.id !== currentUser.id && (
                                 <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => toggleOperatorPermission(operator)}
-                                    className="bg-yellow-100 hover:bg-yellow-200 text-yellow-600 p-2 rounded-lg transition-colors"
-                                    title="Alterar permissão"
-                                  >
-                                    <Settings className="w-4 h-4" />
-                                  </button>
                                   <button
                                     onClick={() => setDeleteModal({ isOpen: true, operator, loading: false })}
                                     className="bg-red-100 hover:bg-red-200 text-red-600 p-2 rounded-lg transition-colors"
