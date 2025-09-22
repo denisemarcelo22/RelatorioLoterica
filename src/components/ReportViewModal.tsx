@@ -4,8 +4,8 @@ import { getProductReports, getSupplyReports, ProductReport, SupplyReport } from
 
 interface CashReportWithDetails {
   id: string;
-  cod_operador: string;
-  data_fechamento: string;
+  operator_code: string;
+  report_date: string;
   moeda_inicial: number;
   bolao_inicial: number;
   suprimento_inicial: number;
@@ -125,11 +125,11 @@ const ReportViewModal: React.FC<ReportViewModalProps> = ({ isOpen, onClose, repo
                 </div>
                 <div className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
-                  {formatDate(report.data_fechamento)}
+                  {formatDate(report.report_date)}
                 </div>
                 <div className="flex items-center gap-1">
                   <Eye className="w-4 h-4" />
-                  Código: {report.cod_operador}
+                  Código: {report.operator_code}
                 </div>
               </div>
             </div>

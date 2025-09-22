@@ -37,8 +37,8 @@ interface AdminDashboardProps {
 
 interface CashReportWithDetails {
   id: string;
-  cod_operador: string;
-  data_fechamento: string;
+  operator_code: string;
+  report_date: string;
   moeda_inicial: number;
   bolao_inicial: number;
   suprimento_inicial: number;
@@ -194,7 +194,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
     try {
       setLoading(true);
       
-      // Load operators
+      // Load operators from registered operators list
       const operatorsData = await getAllUsers();
       setOperators(operatorsData);
 
@@ -203,10 +203,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
       
       // Enrich reports with operator names
       const enrichedReports = reportsData.map(report => {
-        const operator = operatorsData.find(op => op.cod_operador === report.cod_operador);
+        const operator = operatorsData.find(op => op.cod_operador === report.operator_code);
         return {
           ...report,
-          operator_name: operator ? operator.nome : `Operador ${report.cod_operador}`
+          operator_name: operator ? operator.nome : `Operador ${report.operator_code}`
         };
       });
       
@@ -231,7 +231,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
       setOperators(prev => prev.filter(op => op.id !== deleteModal.operator?.id));
       
       // Also remove any reports from this operator
-      setReports(prev => prev.filter(report => report.cod_operador !== deleteModal.operator?.cod_operador));
+      setReports(prev => prev.filter(report => report.operator_code !== deleteModal.operator?.cod_operador));
       
       // Close modal
       setDeleteModal({ isOpen: false, operator: null, loading: false });
@@ -271,8 +271,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
 
   const filteredReports = reports.filter(report => {
     const matchesSearch = report.operator_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         report.cod_operador.includes(searchTerm);
-    const matchesDate = !dateFilter || report.data_fechamento === dateFilter;
+                         report.operator_code.includes(searchTerm);
+    const matchesDate = !dateFilter || report.report_date === dateFilter;
     return matchesSearch && matchesDate;
   });
 
@@ -289,9 +289,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onLogout }
   const totalOperators = operators.length;
   const activeOperators = operators.filter(op => op.ativo).length;
   const todayReports = reports.filter(report => 
-    report.data_fechamento === new Date().toISOString().split('T')[0]
+    report.report_date === new Date().toISOString().split('T')[0]
   ).length;
-  const totalRevenue = reports.reduce((sum, report) => sum + (report.total_caixa_1 + report.total_caixa_2), 0);
+  const totalRevenue = reports.reduce((sum, report) => sum + ((report.total_caixa_1 || 0) + (report.total_caixa_2 || 0)), 0);
 
   if (loading) {
     return (

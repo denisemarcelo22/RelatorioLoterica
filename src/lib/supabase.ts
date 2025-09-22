@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// User interface for application users
+// User interface based on Supabase Auth metadata
 export interface User {
   id: string;
   email: string;
@@ -76,24 +76,19 @@ export interface ProductReport {
   id: string;
   fechamento_id: string;
   cod_operador: string;
-  telesena_verde: number;
-  rodada_da_sorte: number;
-  federal_10: number;
-  telesena_lilas: number;
-  trio: number;
-  trevo_sorte: number;
-  federal: number;
-  telesena: number;
-  caca_tesouro: number;
-  so_ouro: number;
-  telesena_rosa: number;
-  telesena_amarela: number;
-  telesena_vermelha: number;
-  qtd_inicial: number;
-  qtd_recebida: number;
-  qtd_devolvida: number;
-  qtd_final: number;
-  vlr_vendido: number;
+  quantidade_tele_sena_verde: number;
+  quantidade_roda_da_sorte: number;
+  quantidade_federal_10: number;
+  quantidade_tele_sena_lilas: number;
+  quantidade_trio: number;
+  quantidade_trevo_da_sorte: number;
+  quantidade_federal: number;
+  quantidade_tele_sena: number;
+  quantidade_caca_ao_tesouro: number;
+  quantidade_so_o_ouro: number;
+  quantidade_tele_sena_rosa: number;
+  quantidade_tele_sena_amarela: number;
+  quantidade_tele_sena_vermelha: number;
   created_at: string;
   updated_at: string;
 }
@@ -102,20 +97,10 @@ export interface SupplyReport {
   id: string;
   fechamento_id: string;
   cod_operador: string;
-  "R$200": number;
-  "R$100": number;
-  "R$50": number;
-  "R$20": number;
-  "R$10": number;
-  "R$5": number;
-  "R$2": number;
-  "R$1": number;
-  "R$0,50": number;
-  "R$0,25": number;
-  "R$0,10": number;
-  "R$0,05": number;
-  qtd: number;
-  vlr_total: number;
+  denominacao: string;
+  valor_unitario: number;
+  quantidade: number;
+  valor_total: number;
   created_at: string;
 }
 
@@ -324,12 +309,12 @@ export const deleteUser = async (userId: string) => {
   }
 };
 
-// Cash report functions using tb_fechamento_caixa
+// Cash report functions using cash_reports table
 export const saveCashReport = async (reportData: Partial<CashReport>) => {
   const { data, error } = await supabase
-    .from('tb_fechamento_caixa')
+    .from('cash_reports')
     .upsert(reportData, {
-      onConflict: 'cod_operador,data_fechamento'
+      onConflict: 'operator_code,report_date'
     })
     .select()
     .single();
@@ -342,10 +327,10 @@ export const getCashReport = async (operatorCode: string, date?: string) => {
   const reportDate = date || new Date().toISOString().split('T')[0];
   
   const { data, error } = await supabase
-    .from('tb_fechamento_caixa')
+    .from('cash_reports')
     .select('*')
-    .eq('cod_operador', operatorCode)
-    .eq('data_fechamento', reportDate)
+    .eq('operator_code', operatorCode)
+    .eq('report_date', reportDate)
     .maybeSingle();
 
   if (error) throw error;
@@ -355,9 +340,9 @@ export const getCashReport = async (operatorCode: string, date?: string) => {
 // Get all cash reports (admin function)
 export const getCashReports = async () => {
   const { data, error } = await supabase
-    .from('tb_fechamento_caixa')
+    .from('cash_reports')
     .select('*')
-    .order('data_fechamento', { ascending: false })
+    .order('report_date', { ascending: false })
     .order('updated_at', { ascending: false });
 
   if (error) throw error;
@@ -365,20 +350,20 @@ export const getCashReports = async () => {
 };
 
 // Product report functions using tb_controle_jogos
-export const saveProductReports = async (fechamentoId: string, products: Partial<ProductReport>[]) => {
+export const saveProductReports = async (fechamentoId: string, productData: any) => {
   // Delete existing products for this report
   await supabase
     .from('tb_controle_jogos')
     .delete()
     .eq('fechamento_id', fechamentoId);
 
-  // Insert new products
+  // Insert new product data
   const { data, error } = await supabase
     .from('tb_controle_jogos')
-    .insert(products.map(product => ({
-      ...product,
-      fechamento_id: fechamentoId
-    })))
+    .insert([{
+      fechamento_id: fechamentoId,
+      ...productData
+    }])
     .select();
 
   if (error) throw error;
@@ -396,7 +381,7 @@ export const getProductReports = async (fechamentoId: string) => {
 };
 
 // Supply report functions using tb_suprimento_cofre
-export const saveSupplyReports = async (fechamentoId: string, supplies: Partial<SupplyReport>[]) => {
+export const saveSupplyReports = async (fechamentoId: string, supplies: any[]) => {
   // Delete existing supplies for this report
   await supabase
     .from('tb_suprimento_cofre')
@@ -406,10 +391,7 @@ export const saveSupplyReports = async (fechamentoId: string, supplies: Partial<
   // Insert new supplies
   const { data, error } = await supabase
     .from('tb_suprimento_cofre')
-    .insert(supplies.map(supply => ({
-      ...supply,
-      fechamento_id: fechamentoId
-    })))
+    .insert(supplies)
     .select();
 
   if (error) throw error;
